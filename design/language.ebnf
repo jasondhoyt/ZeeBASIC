@@ -212,7 +212,7 @@ builtin_function =
     | "BIN$"
     | "CHR$" | "COMMAND$" | "COS" 
     | "DATE$"
-    | "ENVIRON$" | "ERL" | "ERR" | "EXP"
+    | "ENVIRON$" | "EXP"
     | "FIX"
     | "HEX$"
     | "INKEY$" | "INSTR" | "INT"
@@ -232,6 +232,8 @@ literal =
     | integer_literal
     | real_literal
     | string_literal ;
+
+boolean_literal = "TRUE" | "FALSE" ;
 
 unary_operator = "-" | "NOT" ;
 
