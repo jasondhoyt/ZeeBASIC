@@ -1,0 +1,264 @@
+statement = 
+    declaration_statement
+    | type_statement
+    | subroutine_statement
+    | general_statement 
+    | data_statement ;
+
+sub_statement =
+    declaration_statement
+    | static_statement
+    | general_statement ;
+
+general_statement =
+    if_statement
+    | select_statement
+    | loop_statement 
+    | branch_statement 
+    | assignment_statement
+    | randomize_statement
+    | swap_statement
+    | end_statement
+    | restore_statement
+    | read_statement
+    | mid_statement
+    | io_statement ;
+
+
+(*              *)
+(* Declarations *)
+(*              *)
+
+declaration_statement = dim_statement
+    | redim_statement
+    | const_statement ;
+
+dim_statement = "DIM" [ "SHARED" ] dim_field { "," dim_field } term ;
+
+redim_statement = "REDIM" [ "SHARED" ] name "(" array_spec ")" term ;
+
+static_statement = "STATIC" dim_field { "," dim_field } term ;
+
+const_statement = "CONST" name "=" expression { "," name "=" expression } term ;
+
+dim_field = typed_dim_field | untyped_dim_field ;
+
+typed_dim_field = typed_name [ "(" array_spec ")" ] ;
+
+untyped_dim_field = untyped_name [ typename ] ;
+
+
+(*                *)
+(* TYPE Statement *)
+(*                *)
+
+type_statement = "TYPE" udt_name term type_field { type_field } "END" "TYPE" term ;
+
+type_field = untyped_name "AS" typename ;
+
+
+(*                       *)
+(* Subroutines/Functions *)
+(*                       *)
+
+subroutine_statement =
+    declare_statement
+    | sub_statement
+    | function_statement ;
+
+declare_statement = "DECLARE" ( sub_declaration | function_declaration ) term ;
+
+sub_statement = sub_declaration term { sub_statement } "END" "SUB" term ;
+
+function_statement = function_declaration term { sub_statement } "END" "FUNCTION" term ;
+
+sub_declaration = "SUB" untyped_name "(" [ parameter { "," parameter } ] ")" ;
+
+function_declaration = "FUNCTION" name "(" [ parameter { "," parameter } ] ")" [ "AS" simple_type ] ;
+
+
+(*                      *)
+(* Selection Statements *)
+(*                      *)
+
+if_statement =
+    "IF" expression "THEN" term
+    { general_statement }
+    { "ELSEIF" expression "THEN" term { general_statement } }
+    { "ELSE" term { general_statement } }
+    "END" "IF" term ;
+
+select_statement =
+    "SELECT" "CASE" expression term
+    { case_statement term { general_statement } }
+    { "CASE" "ELSE" term { general_statement } }
+    "END" "SELECT" term ;
+
+case_statement = "CASE" case_element { "," case_element } ;
+
+case_element =
+    expression
+    | expression "TO" expression
+    | "IS" ( "=" | "<>" | ">" | ">=" | "<" | "<=" ) expression ;
+
+
+(*                *)
+(* Loop Statement *)
+(*                *)
+
+loop_statement =
+    do_statement
+    | for_statement ;
+
+do_loop_statement = "DO" [ do_condition ] term { general_statement } "LOOP" [ condition ] term ;
+
+do_condition = ( "WHILE" | "UNTIL" ) expression ;
+
+for_statement =
+    "FOR" name "=" expression "TO" expression [ "STEP" expression ] term
+    { general_statement }
+    "NEXT" [ name ] ;
+
+
+(*                   *)
+(* Branch Statements *)
+(*                   *)
+
+branch_statement =
+    call_statement
+    | gosub_statement
+    | return_statement
+    | exit_statement ;
+
+call_statement =
+    explicit_call_statement
+    | implicit_call_statement ;
+
+explicit_call_statement =
+    "CALL" untyped_name [ "(" [ expression { "," expression } ] ")" ] term ;
+
+implicit_call_statement =
+    untyped_name [ expression { "," expression } ] ;
+
+gosub_statement = "GOSUB" untyped_name term ;
+
+return_statement = "RETURN" term ;
+
+exit_statement = "EXIT" ( "SUB" | "FUNCTION" | "LOOP" | "FOR" ) ;
+
+
+(*                          *)
+(* Miscellaneous Statements *)
+(*                          *)
+
+assignment_statement = identifier "=" expression term ;
+
+randomize_statement = "RANDOMIZE" expression term ;
+
+swap_statement = "SWAP" identifier "," identifier term ;
+
+end_statement = "END" term ;
+
+data_statement = "DATA" [ literal { "," literal } ] term ;
+
+restore_statement = "RESTORE" label term ;
+
+read_statement = "READ" identifier { "," identifier } term ;
+
+mid_statement = "MID$" "(" identifier "," expression [ "," expression ] ")" "=" expression term ;
+
+
+(*                *)
+(* I/O Statements *)
+(*                *)
+
+io_statement =
+    print_statment 
+    | input_statement 
+    | sleep_statement ;
+
+print_statment = "PRINT" [ expression { ( "," | ";" ) [ expression ] } ] term ;
+
+input_statement = "INPUT" [ expression ] [ "," | ";" ] identifier ;
+
+sleep_statement = "SLEEP" [ expression ] term ;
+
+
+(*       *)
+(* Types *)
+(*       *)
+
+typename = simple_type [ "(" array_spec ")" ] ;
+
+simple_type = "BOOLEAN" | "INTEGER" | "REAL" | "STRING" | udt_name ;
+
+array_spec = [ integer_literal "TO" ] integer_literal ;
+
+
+(*             *)
+(* Expressions *)
+(*             *)
+
+expression =
+    literal
+    | identifier
+    | "(" expression ")"
+    | ( builtin_function | name ) [ "(" [ expression { "," expression } ] ]
+    | unary_operator expression
+    | expression binary_operator expression ;
+
+builtin_function =
+    "ABS" | "ASC" | "ATN"
+    | "BIN$"
+    | "CHR$" | "COMMAND$" | "COS" 
+    | "DATE$"
+    | "ENVIRON$" | "ERL" | "ERR" | "EXP"
+    | "FIX"
+    | "HEX$"
+    | "INKEY$" | "INSTR" | "INT"
+    | "LBOUND" | "LCASE$" | "LEFT$" | "LEN" | "LOG" | "LTRIM$"
+    | "MID$"
+    | "OCT$"
+    | "RIGHT$" | "RND" | "RTRIM$"
+    | "SGN" | "SIN" | "SPACE$" | "SQR" | "STR$" | "STRING$"
+    | "TAN" | "TIME$" | "TIMER"
+    | "UBOUND" | "UCASE$"
+    | "VAL" ;
+
+identifier = name [ "(" expression ")" ] [ "." identifier ] ;
+
+literal =
+    boolean_literal
+    | integer_literal
+    | real_literal
+    | string_literal ;
+
+unary_operator = "-" | "NOT" ;
+
+binary_operator =
+    "*" | "/" | "\" | "MOD"     (* precedence 1 *)
+    | "-" | "+"                 (* precedence 2 *)
+    | "<" | "<=" | ">" | ">="   (* precedence 3 *)
+    | "=" | "<>"                (* precedence 4 *)
+    | "AND"                     (* precedence 5 *)
+    | "XOR"                     (* precedence 6 *)
+    | "OR"                      (* precedence 7 *)
+;
+
+(*                     *)
+(* Supporting Elements *)
+(*                     *)
+
+label = untyped_name ":" ;
+
+term = ":" | "\n" ;
+
+udt_name = untyped_name ;
+
+name = untyped_name | typed_name ;
+
+typed_name = untyped_name ( "?" | "%" | "!" | "$" ) ;
+
+untyped_name = ? [a-zA-Z][a-zA-Z0-9]* ? ;
+
+integer_literal = ? [0-9][0-9]* ? ;
