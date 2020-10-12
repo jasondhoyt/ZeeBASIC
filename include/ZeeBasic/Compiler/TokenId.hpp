@@ -26,7 +26,7 @@
 
 #pragma once
 
-namespace Zee::Compiler
+namespace ZeeBasic::Compiler
 {
 
     enum class TokenId
@@ -78,7 +78,7 @@ namespace Zee::Compiler
         Sym_Add, Sym_Subtract,
         Sym_Multiply, Sym_Divide, Sym_IntDivide,
         Sym_Less, Sym_LessEquals, Sym_Greater, Sym_GreaterEquals,
-        Sym_Equals, Sym_NotEquals,
+        Sym_Equal, Sym_NotEqual,
         Sym_Colon,
         Sym_Comma,
         Sym_Semicolon,
