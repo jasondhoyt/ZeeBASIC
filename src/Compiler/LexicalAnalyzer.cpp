@@ -24,6 +24,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+#include <cassert>
+
 #include "ZeeBasic/Compiler/LexicalAnalyzer.hpp"
 
 #include "ZeeBasic/Compiler/Error.hpp"
@@ -128,8 +130,7 @@ namespace ZeeBasic::Compiler
             return State::Symbol;
         }
 
-        Error::Raise({ m_lineNo, m_colNo }, "Unexpected character encountered");
-        __builtin_unreachable();
+        throw Error::create({ m_lineNo, m_colNo }, "Unexpected character encountered");
     }
 
     LexicalAnalyzer::ConsumeState LexicalAnalyzer::consumeChar(char ch)
@@ -177,7 +178,7 @@ namespace ZeeBasic::Compiler
         case State::String:
             if (m_ch == '\n')
             {
-                Error::Raise(m_range, "End-of-line not permitted in string literal.");
+                throw Error::create(m_range, "End-of-line not permitted in string literal.");
             }
             else if (m_ch == '"')
             {
@@ -320,7 +321,11 @@ namespace ZeeBasic::Compiler
         };
         for (auto i = 0; keywords[i].text; ++i)
         {
+#ifdef _WIN32
+            if (keywords[i].length == length && _stricmp(keywords[i].text, text) == 0)
+#else
             if (keywords[i].length == length && strcasecmp(keywords[i].text, text) == 0)
+#endif
             {
                 return keywords[i].id;
             }
@@ -362,8 +367,7 @@ namespace ZeeBasic::Compiler
             }
         }
 
-        assert(false);
-        __builtin_unreachable();
+        throw std::runtime_error("Internal state error");
     }
 
     Token LexicalAnalyzer::constructToken()
@@ -401,11 +405,10 @@ namespace ZeeBasic::Compiler
             return { TokenId::EndOfLine, m_range, {} };
 
         default:
-            assert(false);
             break;
         }
 
-        __builtin_unreachable();
+        throw std::runtime_error("Internal state error");
     }
 
 }

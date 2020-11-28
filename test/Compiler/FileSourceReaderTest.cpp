@@ -24,6 +24,7 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+#include <filesystem>
 #include <fstream>
 
 #include <gtest/gtest.h>
@@ -38,13 +39,13 @@ TEST(ZeeBasic_Compiler_FileSourceReader, Initialization)
 
     std::ofstream{ "test.zee" } << "Test File";
     EXPECT_NO_THROW(FileSourceReader{ "test.zee" });
-    unlink("test.zee");
+    std::filesystem::remove("test.zee");
 }
 
 TEST(ZeeBasic_Compiler_FileSourceReader, ReadData)
 {
-    std::ofstream{ "test.zee" } << "File\nWith\nNewlines";
-    auto reader = FileSourceReader{ "test.zee" };
+    std::ofstream{ "test2.zee" } << "File\nWith\nNewlines";
+    auto reader = FileSourceReader{ "test2.zee" };
 
     auto lineNo = 0;
     auto colNo = 0;
@@ -98,5 +99,5 @@ TEST(ZeeBasic_Compiler_FileSourceReader, ReadData)
         EXPECT_EQ(colNo, 9);
     }
 
-    unlink("test.zee");
+    std::filesystem::remove("test.zee");
 }

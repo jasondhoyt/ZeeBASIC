@@ -37,7 +37,7 @@ namespace ZeeBasic::Compiler
         public std::runtime_error
     {
     public:
-        static void Raise(const Range& range, const char* format, ...);
+        static Error create(const Range& range, const char* format, ...);
 
         virtual ~Error();
 

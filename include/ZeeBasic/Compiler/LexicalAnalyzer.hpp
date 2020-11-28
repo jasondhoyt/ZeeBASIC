@@ -57,7 +57,7 @@ namespace ZeeBasic::Compiler
             String,
             Name,
             Symbol,
-            EndOfLine
+            EndOfLine,
         };
         State m_state;
 

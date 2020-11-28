@@ -40,7 +40,12 @@ namespace ZeeBasic::Compiler
         m_lineNo(1),
         m_colNo(1)
     {
+#ifdef _WIN32
+        FILE* file = nullptr;
+        fopen_s(&file, path.c_str(), "r");
+#else
         auto file = fopen(path.c_str(), "r");
+#endif
         if (!file)
         {
             throw std::runtime_error(std::string{"Failed to open source file : "} + path);

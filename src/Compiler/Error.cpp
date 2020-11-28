@@ -24,6 +24,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+#include <cstdarg>
+
 #include "ZeeBasic/Compiler/Error.hpp"
 
 namespace ZeeBasic::Compiler
@@ -31,16 +33,20 @@ namespace ZeeBasic::Compiler
 
     static thread_local char messageBuffer[2048];
 
-    void Error::Raise(const Range& range, const char* format, ...)
+    Error Error::create(const Range& range, const char* format, ...)
     {
+#ifdef _WIN32
+        auto len = snprintf(messageBuffer, sizeof(messageBuffer), "[%lld:%lld] ", range.startLine, range.startCol);
+#else
         auto len = snprintf(messageBuffer, sizeof(messageBuffer), "[%d:%d] ", range.startLine, range.startCol);
+#endif
 
         va_list ap;
         va_start(ap, format);
         vsnprintf(messageBuffer + len, sizeof(messageBuffer) - len, format, ap);
         va_end(ap);
 
-        throw Error(range, messageBuffer);
+        return { range, messageBuffer };
     }
 
     Error::Error(const Range& range, const char* msg)

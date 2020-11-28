@@ -81,7 +81,11 @@ namespace ZeeBasic::Compiler
 
     bool ConstString::operator==(const char* text) const
     {
+#ifdef _WIN32
+        return _stricmp(m_text, text) == 0;
+#else
         return strcasecmp(m_text, text) == 0;
+#endif
     }
 
 }

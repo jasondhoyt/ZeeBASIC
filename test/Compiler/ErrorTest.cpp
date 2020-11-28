@@ -30,17 +30,12 @@
 
 using namespace ZeeBasic::Compiler;
 
-TEST(ZeeBasic_Compiler_Error, Raise)
-{
-    EXPECT_THROW(Error::Raise({}, "Test Error"), Error);
-}
-
 TEST(ZeeBasic_Compiler_Error, Parameters)
 {
     auto caught = false;
     try
     {
-        Error::Raise({ 2, 5 }, "Test Error");
+        throw Error::create({ 2, 5 }, "Test Error");
     }
     catch(const Error& e)
     {

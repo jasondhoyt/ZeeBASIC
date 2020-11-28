@@ -1,2 +1,6 @@
 .vscode
 test/bin
+msvc/.vs
+*.user
+x64/
+msvc/packages/
