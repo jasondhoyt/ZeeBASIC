@@ -24,44 +24,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#include "ZeeBasic/Compiler/PrintStatementNode.hpp"
+#pragma once
 
-#include "ZeeBasic/Compiler/ExpressionNode.hpp"
+#include <variant>
 
-namespace ZeeBasic::Compiler::Nodes
+namespace ZeeBasic::Compiler
 {
 
-	PrintStatementNode::PrintStatementNode()
-		:
-		Node(),
-		m_expr()
-	{ }
-
-	PrintStatementNode::~PrintStatementNode()
-	{ }
-
-	void PrintStatementNode::parse(IParser& parser)
-	{
-		auto& token = parser.expectToken(TokenId::Key_PRINT);
-		m_range = token.range;
-		parser.eatToken();
-
-		m_expr = ExpressionNode::parseExpression(parser);
-
-		parser.eatEndOfLine();
-	}
-
-	void PrintStatementNode::analyze(IAnalyzer& analyzer)
-	{
-		if (m_expr)
-		{
-			m_expr->analyze(analyzer);
-		}
-	}
-
-	void PrintStatementNode::translate(ITranslator& translator)
-	{
-		translator.translate(*this);
-	}
+	using LiteralValue = std::variant<bool, int64_t, double, const char*>;
 
 }

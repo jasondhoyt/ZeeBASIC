@@ -45,6 +45,9 @@ namespace ZeeBasic::Compiler::Nodes
 
 		void parse(IParser& parser) override;
 		void analyze(IAnalyzer& analyzer) override;
+		void translate(ITranslator& translator) override;
+
+		const auto getExpression() const { return m_expr.get(); }
 
 	private:
 		std::unique_ptr<ExpressionNode> m_expr;

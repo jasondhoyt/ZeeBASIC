@@ -46,11 +46,17 @@ namespace ZeeBasic::Compiler::Nodes
 		auto& token = parser.expectToken(TokenId::Integer);
 		m_range = token.range;
 		m_value = strtoll(token.text.getText(), nullptr, 10);
+		parser.eatToken();
 	}
 
 	void IntegerLiteralNode::analyze(IAnalyzer& analyzer)
 	{
 		m_type = Type{ BaseType_Integer };
+	}
+
+	void IntegerLiteralNode::translate(ITranslator& translator)
+	{
+		translator.translate(*this);
 	}
 
 }

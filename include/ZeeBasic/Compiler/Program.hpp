@@ -29,13 +29,10 @@
 #include <memory>
 #include <vector>
 
+#include "Node.hpp"
+
 namespace ZeeBasic::Compiler
 {
-
-	namespace Nodes
-	{
-		class Node;
-	}
 
 	struct Program
 	{

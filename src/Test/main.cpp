@@ -24,44 +24,39 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#include "ZeeBasic/Compiler/PrintStatementNode.hpp"
+#include <iostream>
 
-#include "ZeeBasic/Compiler/ExpressionNode.hpp"
+#include "ZeeBasic/Compiler/Analyzer.hpp"
+#include "ZeeBasic/Compiler/CTranslator.hpp"
+#include "ZeeBasic/Compiler/Error.hpp"
+#include "ZeeBasic/Compiler/FileSourceReader.hpp"
+#include "ZeeBasic/Compiler/Parser.hpp"
+#include "ZeeBasic/Compiler/Program.hpp"
 
-namespace ZeeBasic::Compiler::Nodes
+using namespace ZeeBasic::Compiler;
+
+int main(int argc, char* argv[])
 {
+	auto source = FileSourceReader{ "test.zb" };
 
-	PrintStatementNode::PrintStatementNode()
-		:
-		Node(),
-		m_expr()
-	{ }
-
-	PrintStatementNode::~PrintStatementNode()
-	{ }
-
-	void PrintStatementNode::parse(IParser& parser)
+	try
 	{
-		auto& token = parser.expectToken(TokenId::Key_PRINT);
-		m_range = token.range;
-		parser.eatToken();
+		auto program = Program{};
+		auto parser = Parser{ source, program };
+		parser.run();
 
-		m_expr = ExpressionNode::parseExpression(parser);
+		auto analyzer = Analyzer{ program };
+		analyzer.run();
 
-		parser.eatEndOfLine();
+		auto translator = CTranslator{ "out.c", program };
+		translator.run();
+	}
+	catch (const Error& err)
+	{
+		std::cerr << "Compile Error!" << std::endl;
+		std::cerr << err.what() << std::endl;
+		return -1;
 	}
 
-	void PrintStatementNode::analyze(IAnalyzer& analyzer)
-	{
-		if (m_expr)
-		{
-			m_expr->analyze(analyzer);
-		}
-	}
-
-	void PrintStatementNode::translate(ITranslator& translator)
-	{
-		translator.translate(*this);
-	}
-
+	return 0;
 }

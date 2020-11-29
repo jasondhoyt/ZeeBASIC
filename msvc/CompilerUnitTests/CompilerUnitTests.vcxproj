@@ -40,6 +40,7 @@
     <ClCompile Include="..\..\test\Compiler\ErrorTest.cpp" />
     <ClCompile Include="..\..\test\Compiler\FileSourceReaderTest.cpp" />
     <ClCompile Include="..\..\test\Compiler\LexicalAnalyzerTest.cpp" />
+    <ClCompile Include="..\..\test\Compiler\ParserTest.cpp" />
     <ClCompile Include="..\..\test\Compiler\RangeTest.cpp" />
   </ItemGroup>
   <ItemDefinitionGroup />

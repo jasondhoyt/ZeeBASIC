@@ -24,44 +24,29 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#include "ZeeBasic/Compiler/PrintStatementNode.hpp"
+#pragma once
 
-#include "ZeeBasic/Compiler/ExpressionNode.hpp"
-
-namespace ZeeBasic::Compiler::Nodes
+namespace ZeeBasic::Compiler
 {
 
-	PrintStatementNode::PrintStatementNode()
-		:
-		Node(),
-		m_expr()
-	{ }
-
-	PrintStatementNode::~PrintStatementNode()
-	{ }
-
-	void PrintStatementNode::parse(IParser& parser)
+	namespace Nodes
 	{
-		auto& token = parser.expectToken(TokenId::Key_PRINT);
-		m_range = token.range;
-		parser.eatToken();
-
-		m_expr = ExpressionNode::parseExpression(parser);
-
-		parser.eatEndOfLine();
+		class IntegerLiteralNode;
+		class PrintStatementNode;
 	}
 
-	void PrintStatementNode::analyze(IAnalyzer& analyzer)
-	{
-		if (m_expr)
-		{
-			m_expr->analyze(analyzer);
-		}
-	}
+	struct Program;
 
-	void PrintStatementNode::translate(ITranslator& translator)
+	class ITranslator
 	{
-		translator.translate(*this);
-	}
+	public:
+		ITranslator() { }
+		virtual ~ITranslator() { }
+
+		virtual void run() = 0;
+
+		virtual void translate(const Nodes::IntegerLiteralNode& node) = 0;
+		virtual void translate(const Nodes::PrintStatementNode& node) = 0;
+	};
 
 }

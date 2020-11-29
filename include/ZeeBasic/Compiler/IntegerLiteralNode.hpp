@@ -41,6 +41,9 @@ namespace ZeeBasic::Compiler::Nodes
 
 		void parse(IParser& parser) override;
 		void analyze(IAnalyzer& analyzer) override;
+		void translate(ITranslator& translator) override;
+
+		auto getValue() const { return m_value; }
 
 	private:
 		int64_t m_value;

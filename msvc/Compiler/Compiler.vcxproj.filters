@@ -78,6 +78,15 @@
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\StatementNode.hpp">
       <Filter>Header Files\Nodes</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\LiteralValue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\ITranslator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\CTranslator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Compiler\ConstString.cpp">
@@ -109,6 +118,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Compiler\StatementNode.cpp">
       <Filter>Source Files\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\CTranslator.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

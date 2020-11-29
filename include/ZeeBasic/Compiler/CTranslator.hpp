@@ -24,44 +24,53 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#include "ZeeBasic/Compiler/PrintStatementNode.hpp"
+#pragma once
 
-#include "ZeeBasic/Compiler/ExpressionNode.hpp"
+#include <cstdio>
+#include <stack>
+#include <string>
 
-namespace ZeeBasic::Compiler::Nodes
+#include "ITranslator.hpp"
+
+#include "Type.hpp"
+
+namespace ZeeBasic::Compiler
 {
 
-	PrintStatementNode::PrintStatementNode()
+	class CTranslator
 		:
-		Node(),
-		m_expr()
-	{ }
-
-	PrintStatementNode::~PrintStatementNode()
-	{ }
-
-	void PrintStatementNode::parse(IParser& parser)
+		public ITranslator
 	{
-		auto& token = parser.expectToken(TokenId::Key_PRINT);
-		m_range = token.range;
-		parser.eatToken();
+	public:
+		CTranslator(const std::string& path, const Program& program);
+		virtual ~CTranslator();
 
-		m_expr = ExpressionNode::parseExpression(parser);
+		void run() override;
 
-		parser.eatEndOfLine();
-	}
+		void translate(const Nodes::IntegerLiteralNode& node) override;
+		void translate(const Nodes::PrintStatementNode& node) override;
 
-	void PrintStatementNode::analyze(IAnalyzer& analyzer)
-	{
-		if (m_expr)
+	private:
+		FILE* m_file;
+
+		const Program& m_program;
+
+		int m_indent;
+
+		struct Temporary
 		{
-			m_expr->analyze(analyzer);
-		}
-	}
+			Type type;
+			int id;
 
-	void PrintStatementNode::translate(ITranslator& translator)
-	{
-		translator.translate(*this);
-	}
+			Temporary(Type type, int id) : type(type), id(id) { }
+		};
+		std::stack<Temporary> m_temps;
+
+		int m_nextTempId;
+
+		void indent();
+		int makeTemp(Type type);
+		void destroyTemp(const Temporary& temp);
+	};
 
 }
