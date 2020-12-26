@@ -29,6 +29,7 @@
 
 #include "ZeeBasic/Compiler/CTranslator.hpp"
 
+#include "ZeeBasic/Compiler/BinaryExpressionNode.hpp"
 #include "ZeeBasic/Compiler/IntegerLiteralNode.hpp"
 #include "ZeeBasic/Compiler/PrintStatementNode.hpp"
 #include "ZeeBasic/Compiler/Program.hpp"
@@ -87,6 +88,46 @@ namespace ZeeBasic::Compiler
 		fprintf(m_file, "}\n");
 
 		fflush(m_file);
+	}
+
+	void CTranslator::translate(const Nodes::BinaryExpressionNode& node)
+	{
+		node.getLeft().translate(*this);
+		node.getRight().translate(*this);
+
+		auto rhs = m_temps.top();
+		m_temps.pop();
+
+		auto lhs = m_temps.top();
+		m_temps.pop();
+
+		auto id = makeTemp(BaseType_Integer);
+
+		indent();
+		switch (node.getOperator())
+		{
+
+		case Nodes::BinaryExpressionNode::Operator::Add:
+			fprintf(m_file, "zrt_Int t_%d = t_%d + t_%d;\n", id, lhs.id, rhs.id);
+			break;
+
+		case Nodes::BinaryExpressionNode::Operator::Subtract:
+			fprintf(m_file, "zrt_Int t_%d = t_%d - t_%d;\n", id, lhs.id, rhs.id);
+			break;
+
+		case Nodes::BinaryExpressionNode::Operator::Multiply:
+			fprintf(m_file, "zrt_Int t_%d = t_%d * t_%d;\n", id, lhs.id, rhs.id);
+			break;
+
+		case Nodes::BinaryExpressionNode::Operator::Divide:
+			fprintf(m_file, "zrt_Int t_%d = t_%d / t_%d;\n", id, lhs.id, rhs.id);
+			break;
+
+		default:
+			assert(false);
+
+		}
+		
 	}
 
 	void CTranslator::translate(const Nodes::IntegerLiteralNode& node)

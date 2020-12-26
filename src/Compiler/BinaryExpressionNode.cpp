@@ -24,31 +24,33 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#pragma once
+#include "ZeeBasic/Compiler/BinaryExpressionNode.hpp"
 
-namespace ZeeBasic::Compiler
+namespace ZeeBasic::Compiler::Nodes
 {
 
-	namespace Nodes
+	BinaryExpressionNode::BinaryExpressionNode(Operator op, std::unique_ptr<ExpressionNode> lhs, std::unique_ptr<ExpressionNode> rhs)
+		:
+		m_op(op),
+		m_lhs(std::move(lhs)),
+		m_rhs(std::move(rhs))
+	{ }
+
+	BinaryExpressionNode::~BinaryExpressionNode()
+	{ }
+
+	void BinaryExpressionNode::parse(IParser& parser)
+	{ }
+
+	void BinaryExpressionNode::analyze(IAnalyzer& analyzer)
 	{
-		class BinaryExpressionNode;
-		class IntegerLiteralNode;
-		class PrintStatementNode;
+		// TODO
+		m_type = Type{ BaseType_Integer };
 	}
 
-	struct Program;
-
-	class ITranslator
+	void BinaryExpressionNode::translate(ITranslator& translator)
 	{
-	public:
-		ITranslator() { }
-		virtual ~ITranslator() { }
-
-		virtual void run() = 0;
-
-		virtual void translate(const Nodes::BinaryExpressionNode& node) = 0;
-		virtual void translate(const Nodes::IntegerLiteralNode& node) = 0;
-		virtual void translate(const Nodes::PrintStatementNode& node) = 0;
-	};
+		translator.translate(*this);
+	}
 
 }

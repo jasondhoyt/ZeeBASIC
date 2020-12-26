@@ -81,6 +81,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Analyzer.hpp" />
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\BinaryExpressionNode.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\ConstString.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\CTranslator.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Error.hpp" />
@@ -105,6 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Compiler\Analyzer.cpp" />
+    <ClCompile Include="..\..\src\Compiler\BinaryExpressionNode.cpp" />
     <ClCompile Include="..\..\src\Compiler\ConstString.cpp" />
     <ClCompile Include="..\..\src\Compiler\CTranslator.cpp" />
     <ClCompile Include="..\..\src\Compiler\Error.cpp" />

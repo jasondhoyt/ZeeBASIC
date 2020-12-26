@@ -38,8 +38,8 @@ namespace ZeeBasic::Compiler
         m_sourceReader(&sourceReader),
         m_state(State::Begin),
         m_ch(0),
-        m_lineNo(0),
-        m_colNo(0),
+        m_lineNo(1),
+        m_colNo(1),
         m_range(),
         m_text()
     { }
@@ -61,6 +61,13 @@ namespace ZeeBasic::Compiler
                 {
                     return { TokenId::EndOfCode, {}, {} };
                 }
+            }
+            else
+            {
+                // TODO : bad hack, find better way of doing this
+                // subtract one after initial character because we always look ahead one which increments
+                // the counts
+                m_colNo--;
             }
 
             // prepare for new token

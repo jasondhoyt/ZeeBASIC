@@ -47,7 +47,7 @@ namespace ZeeBasic::Compiler
         FileSourceReader& operator=(FileSourceReader&) = delete;
         FileSourceReader& operator=(FileSourceReader&&) = default;
 
-        // Get the current read position within the stream.
+        // Get the current read position for the next character within the stream.
         void getReadPosition(int& lineNo, int& colNo) override { lineNo = m_lineNo; colNo = m_colNo; }
 
         // Read the next character in the source stream, or a 0 if the stream is complete.

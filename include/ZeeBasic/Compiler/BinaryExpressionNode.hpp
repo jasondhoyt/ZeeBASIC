@@ -26,29 +26,40 @@
 
 #pragma once
 
-namespace ZeeBasic::Compiler
+#include "ExpressionNode.hpp"
+
+namespace ZeeBasic::Compiler::Nodes
 {
 
-	namespace Nodes
-	{
-		class BinaryExpressionNode;
-		class IntegerLiteralNode;
-		class PrintStatementNode;
-	}
-
-	struct Program;
-
-	class ITranslator
+	class BinaryExpressionNode
+		:
+		public ExpressionNode
 	{
 	public:
-		ITranslator() { }
-		virtual ~ITranslator() { }
+		enum class Operator
+		{
+			Add,
+			Subtract,
+			Multiply,
+			Divide,
+			IntDivide
+		};
 
-		virtual void run() = 0;
+		BinaryExpressionNode(Operator op, std::unique_ptr<ExpressionNode> lhs, std::unique_ptr<ExpressionNode> rhs);
+		virtual ~BinaryExpressionNode();
 
-		virtual void translate(const Nodes::BinaryExpressionNode& node) = 0;
-		virtual void translate(const Nodes::IntegerLiteralNode& node) = 0;
-		virtual void translate(const Nodes::PrintStatementNode& node) = 0;
+		auto getOperator() const { return m_op; }
+		auto& getLeft() const { return *m_lhs; }
+		auto& getRight() const { return *m_rhs; }
+
+		void parse(IParser& parser) override;
+		void analyze(IAnalyzer& analyzer) override;
+		void translate(ITranslator& translator) override;
+
+	private:
+		Operator m_op;
+		std::unique_ptr<ExpressionNode> m_lhs;
+		std::unique_ptr<ExpressionNode> m_rhs;		
 	};
 
 }

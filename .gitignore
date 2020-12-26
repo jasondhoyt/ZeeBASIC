@@ -4,3 +4,4 @@ msvc/.vs
 *.user
 x64/
 msvc/packages/
+out.c

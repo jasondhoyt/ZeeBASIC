@@ -72,6 +72,7 @@ namespace ZeeBasic::Compiler
 		switch (id)
 		{
 		case TokenId::Integer: return "integer literal";
+		case TokenId::Sym_CloseParen: return "closing parenthesis";
 		default:
 			break;
 		}

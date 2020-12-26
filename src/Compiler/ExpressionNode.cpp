@@ -28,30 +28,95 @@
 
 #include "ZeeBasic/Compiler/ExpressionNode.hpp"
 
+#include "ZeeBasic/Compiler/BinaryExpressionNode.hpp"
 #include "ZeeBasic/Compiler/IntegerLiteralNode.hpp"
 
 namespace ZeeBasic::Compiler::Nodes
 {
 
-	std::unique_ptr<ExpressionNode> ExpressionNode::parseExpression(IParser& parser)
+	static int getPrecedence(const Token& token)
+	{
+		switch (token.id)
+		{
+		case TokenId::Sym_Add:
+		case TokenId::Sym_Subtract:
+			return 7;
+
+		case TokenId::Sym_Multiply:
+		case TokenId::Sym_Divide:
+		case TokenId::Sym_IntDivide:
+			return 8;
+
+		default:
+			break;
+		}
+
+		return 0;
+	}
+
+	static BinaryExpressionNode::Operator mapBinaryOperator(TokenId id)
+	{
+		switch (id)
+		{
+		case TokenId::Sym_Add: return BinaryExpressionNode::Operator::Add;
+		case TokenId::Sym_Subtract: return BinaryExpressionNode::Operator::Subtract;
+		case TokenId::Sym_Multiply: return BinaryExpressionNode::Operator::Multiply;
+		case TokenId::Sym_Divide: return BinaryExpressionNode::Operator::Divide;
+		case TokenId::Sym_IntDivide: return BinaryExpressionNode::Operator::IntDivide;
+		default:
+			break;
+		}
+
+		assert(false);
+		return (BinaryExpressionNode::Operator)0;
+	}
+
+	static std::unique_ptr<ExpressionNode> parseSubExpression(IParser& parser, int prec)
 	{
 		auto& token = parser.getToken();
 
 		auto lhs = std::unique_ptr<ExpressionNode>{};
 		switch (token.id)
 		{
+
 		case TokenId::Integer:
 			lhs = std::make_unique<IntegerLiteralNode>();
 			break;
+
+		case TokenId::Sym_OpenParen:
+			parser.eatToken();
+			lhs = parseSubExpression(parser, 0);
+			parser.expectToken(TokenId::Sym_CloseParen);
+			parser.eatToken();
+			break;
+
 		default:
 			return {};
+
 		}
 
 		assert(lhs);
 		lhs->parse(parser);
 
+		while (true)
+		{
+			auto newPrec = getPrecedence(parser.getToken());
+			if (prec >= newPrec)
+				break;
+
+			auto id = parser.getToken().id;
+			parser.eatToken();
+
+			auto rhs = parseSubExpression(parser, newPrec);
+			lhs = std::make_unique<BinaryExpressionNode>(mapBinaryOperator(id), std::move(lhs), std::move(rhs));
+		}
 
 		return lhs;
+	}
+
+	std::unique_ptr<ExpressionNode> ExpressionNode::parseExpression(IParser& parser)
+	{
+		return parseSubExpression(parser, 0);
 	}
 
 	ExpressionNode::ExpressionNode()

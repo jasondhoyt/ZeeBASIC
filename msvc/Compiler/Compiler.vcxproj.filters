@@ -87,6 +87,9 @@
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\CTranslator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\BinaryExpressionNode.hpp">
+      <Filter>Header Files\Nodes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Compiler\ConstString.cpp">
@@ -121,6 +124,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Compiler\CTranslator.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\BinaryExpressionNode.cpp">
+      <Filter>Source Files\Nodes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -47,6 +47,7 @@ namespace ZeeBasic::Compiler
 
 		void run() override;
 
+		void translate(const Nodes::BinaryExpressionNode& node) override;
 		void translate(const Nodes::IntegerLiteralNode& node) override;
 		void translate(const Nodes::PrintStatementNode& node) override;
 
