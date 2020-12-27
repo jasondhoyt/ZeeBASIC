@@ -40,6 +40,8 @@ namespace ZeeBasic::Compiler::Nodes
 		Node() { }
 		virtual ~Node() { }
 
+		const auto& getRange() const { return m_range; }
+
 		virtual void parse(IParser& parser) = 0;
 		virtual void analyze(IAnalyzer& analyzer) = 0;
 		virtual void translate(ITranslator& translator) = 0;

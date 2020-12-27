@@ -22,57 +22,39 @@
 // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 #pragma once
 
-#include <cstdint>
+#include <memory>
+
+#include "Node.hpp"
 
 namespace ZeeBasic::Compiler
 {
+	struct Symbol;
+}
 
-    // Defines a pair of line/column locations that designate a piece of source code.
-    struct Range
-    {
-        Range() : startCol(0), endCol(0), startLine(0), endLine(0) { }
-        Range(int lineNo, int colNo) : startCol(colNo), endCol(colNo), startLine(lineNo), endLine(lineNo) { }
-        Range(const Range& start, const Range& end)
-            :
-            startCol(start.startCol),
-            endCol(end.endCol),
-            startLine(start.startLine),
-            endLine(end.endLine)
-        { }
-        ~Range() { }
+namespace ZeeBasic::Compiler::Nodes
+{
 
-        Range(const Range&) = default;
-        Range(Range&&) = default;
-        Range& operator=(const Range&) = default;
-        Range& operator=(Range&&) = default;
+	class ExpressionNode;
 
-        uint64_t startCol : 8;
-        uint64_t endCol : 8;
-        uint64_t startLine : 24;
-        uint64_t endLine : 24;
+	class AssignmentStatementNode
+		:
+		public Node
+	{
+	public:
+		void parse(IParser& parser) override;
+		void analyze(IAnalyzer& analyzer) override;
+		void translate(ITranslator& translator) override;
 
-        Range& operator+=(const Range& rhs)
-        {
-            endCol = rhs.endCol;
-            endLine = rhs.endLine;
-            return *this;
-        }
+		const auto getSymbol() const { return m_symbol; }
+		const auto getExpression() const { return m_expr.get(); }
 
-        Range& operator++()
-        {
-            ++endCol;
-            return *this;
-        }
-
-        friend Range operator+(Range lhs, const Range& rhs)
-        {
-            lhs += rhs;
-            return lhs;
-        }
-    };
+	private:
+		Symbol* m_symbol = nullptr;
+		std::unique_ptr<ExpressionNode> m_expr;
+	};
 
 }

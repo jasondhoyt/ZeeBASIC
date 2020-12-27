@@ -44,6 +44,8 @@ namespace ZeeBasic::Compiler::Nodes
 		ExpressionNode();
 		virtual ~ExpressionNode();
 
+		const auto& getType() const { return m_type; }
+
 	protected:
 		Type m_type;
 	};

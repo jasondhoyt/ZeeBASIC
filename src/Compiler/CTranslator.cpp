@@ -29,21 +29,117 @@
 
 #include "ZeeBasic/Compiler/CTranslator.hpp"
 
+#include "ZeeBasic/Compiler/AssignmentStatementNode.hpp"
 #include "ZeeBasic/Compiler/BinaryExpressionNode.hpp"
+#include "ZeeBasic/Compiler/FunctionCallExpressionNode.hpp"
+#include "ZeeBasic/Compiler/IdentifierExpressionNode.hpp"
 #include "ZeeBasic/Compiler/IntegerLiteralNode.hpp"
 #include "ZeeBasic/Compiler/PrintStatementNode.hpp"
 #include "ZeeBasic/Compiler/Program.hpp"
+#include "ZeeBasic/Compiler/StringLiteralNode.hpp"
 
 namespace ZeeBasic::Compiler
 {
 
+	CTranslator::Writer::Writer(std::vector<VariableIndex>& variableIndices)
+		:
+		m_variableIndices(variableIndices)
+	{ }
+
+	void CTranslator::Writer::setFile(FILE* file)
+	{
+		m_outFile = file;
+	}
+
+	void CTranslator::Writer::indent()
+	{
+		for (int i = 0; i < m_indent; ++i)
+		{
+			fputs("    ", m_outFile);
+		}
+	}
+
+	void CTranslator::Writer::pushIndent()
+	{
+		m_indent++;
+	}
+
+	void CTranslator::Writer::popIndent()
+	{
+		m_indent--;
+	}
+
+	CTranslator::Writer& CTranslator::Writer::operator<<(char ch)
+	{
+		fputc(ch, m_outFile);
+		return *this;
+	}
+
+	CTranslator::Writer& CTranslator::Writer::operator<<(const char* text)
+	{
+		fputs(text, m_outFile);
+		return *this;
+	}
+
+	CTranslator::Writer& CTranslator::Writer::operator<<(int64_t value)
+	{
+		fprintf(m_outFile, "%lld", value);
+		return *this;
+	}
+
+	CTranslator::Writer& CTranslator::Writer::operator<<(int index)
+	{
+		return operator<<(m_variableIndices[index]);
+	}
+
+	CTranslator::Writer& CTranslator::Writer::operator<<(const VariableIndex& index)
+	{
+		if (index.indexType == IndexType::Local)
+		{
+			return operator<<(*index.symbol);
+		}
+		else
+		{
+			fprintf(m_outFile, "t_%d", index.id);
+		}
+
+		return *this;
+	}
+
+	CTranslator::Writer& CTranslator::Writer::operator<<(const Symbol& symbol)
+	{
+		fputs("v_", m_outFile);
+
+		auto len = symbol.name.getLength();
+		auto lastChar = symbol.name.getText()[len - 1];
+		auto appendChar = char{ 0 };
+
+		if (lastChar == '$')
+		{
+			appendChar = 's';
+		}
+
+		if (appendChar == 0)
+		{
+			// just write out whole name
+			fputs(symbol.name.getText(), m_outFile);
+		}
+		else
+		{
+			fwrite(symbol.name.getText(), sizeof(char), len - 1, m_outFile);
+			fputc('_', m_outFile);
+			fputc(appendChar, m_outFile);
+		}
+
+		return *this;
+	}
+
+
 	CTranslator::CTranslator(const std::string& path, const Program& program)
 		:
 		ITranslator(),
-		m_file(nullptr),
 		m_program(program),
-		m_temps(),
-		m_nextTempId(1)
+		m_writer(m_variableIndices)
 	{
 #ifdef _WIN32
 		fopen_s(&m_file, path.c_str(), "w");
@@ -54,6 +150,8 @@ namespace ZeeBasic::Compiler
 		{
 			throw std::runtime_error(std::string{ "Failed to open file for writing : " } + path);
 		}
+
+		m_writer.setFile(m_file);
 	}
 
 	CTranslator::~CTranslator()
@@ -71,11 +169,46 @@ namespace ZeeBasic::Compiler
 		fprintf(m_file, "void program(void)\n");
 		fprintf(m_file, "{\n");
 
-		m_indent = 4;
+		m_writer.pushIndent();
+
+		// initialize locals
+		const auto& symbols = m_program.symbols.getSymbols();
+		for (auto& symbol : symbols)
+		{
+			m_writer.indent();
+			
+			switch (symbol->type.base)
+			{
+
+			case BaseType_Integer:
+				m_writer << "zrt_Int " << *symbol << " = 0;\n";
+				break;
+
+			case BaseType_String:
+				m_writer << "zrt_String* " << *symbol << " = zrt_str_empty();\n";
+				break;
+
+			default:
+				assert(false);				
+
+			}
+		}
 
 		for (const auto& stm : m_program.statements)
 		{
 			stm->translate(*this);
+		}
+
+		// cleanup locals (in reverse order)
+		for (auto it = symbols.rbegin(); it != symbols.rend(); ++it)
+		{
+			auto& symbol = *it;
+
+			if (symbol->type.base == BaseType_String)
+			{
+				m_writer.indent();
+				m_writer << "zrt_str_del(" << *symbol << ");\n";
+			}
 		}
 
 		fprintf(m_file, "}\n");
@@ -90,53 +223,109 @@ namespace ZeeBasic::Compiler
 		fflush(m_file);
 	}
 
+	void CTranslator::translate(const Nodes::AssignmentStatementNode& node)
+	{
+		node.getExpression()->translate(*this);
+		
+		auto index = popIndex();
+		
+		m_writer.indent();
+		if (index.type.base == BaseType_String)
+		{
+			// TODO (copy string?)
+			m_writer << "zrt_str_copy(" << *node.getSymbol() << ", " << index << ");\n";
+		}
+		else
+		{
+			m_writer << *node.getSymbol() << " = " << index << ";\n";
+		}
+
+		destroyIndex(index);
+	}
+
 	void CTranslator::translate(const Nodes::BinaryExpressionNode& node)
 	{
 		node.getLeft().translate(*this);
 		node.getRight().translate(*this);
 
-		auto rhs = m_temps.top();
-		m_temps.pop();
+		auto rhs = popIndex();
+		auto lhs = popIndex();
 
-		auto lhs = m_temps.top();
-		m_temps.pop();
-
-		auto id = makeTemp(BaseType_Integer);
-
-		indent();
-		switch (node.getOperator())
+		m_writer.indent();
+		if (lhs.type.base == BaseType_Integer)
 		{
+			auto ix = pushIndex(BaseType_Integer);
+			char op = '?';
+			switch (node.getOperator())
+			{
 
-		case Nodes::BinaryExpressionNode::Operator::Add:
-			fprintf(m_file, "zrt_Int t_%d = t_%d + t_%d;\n", id, lhs.id, rhs.id);
-			break;
+			case Nodes::BinaryExpressionNode::Operator::Add:
+				op = '+';
+				break;
 
-		case Nodes::BinaryExpressionNode::Operator::Subtract:
-			fprintf(m_file, "zrt_Int t_%d = t_%d - t_%d;\n", id, lhs.id, rhs.id);
-			break;
+			case Nodes::BinaryExpressionNode::Operator::Subtract:
+				op = '-';
+				break;
 
-		case Nodes::BinaryExpressionNode::Operator::Multiply:
-			fprintf(m_file, "zrt_Int t_%d = t_%d * t_%d;\n", id, lhs.id, rhs.id);
-			break;
+			case Nodes::BinaryExpressionNode::Operator::Multiply:
+				op = '*';
+				break;
 
-		case Nodes::BinaryExpressionNode::Operator::Divide:
-			fprintf(m_file, "zrt_Int t_%d = t_%d / t_%d;\n", id, lhs.id, rhs.id);
-			break;
+			case Nodes::BinaryExpressionNode::Operator::Divide:
+				op = '/';
+				break;
 
-		default:
-			assert(false);
+			default:
+				assert(false);
 
+			}
+
+			m_writer << "zrt_Int " << ix << " = " << lhs << " " << op << " " << rhs << ";\n";
 		}
-		
+		else if (lhs.type.base == BaseType_String)
+		{
+			assert(node.getOperator() == Nodes::BinaryExpressionNode::Operator::Add);
+			auto ix = pushIndex(BaseType_String);
+			m_writer << "zrt_String* " << ix << " = zrt_str_concat(" << lhs << ", " << rhs << ");\n";
+		}
+
+		destroyIndex(rhs);
+		destroyIndex(lhs);	
+	}
+
+	void CTranslator::translate(const Nodes::FunctionCallExpressionNode& node)
+	{
+		auto& args = node.getArguments();
+		for (auto& arg : args)
+		{
+			arg->translate(*this);
+		}
+
+		// TODO : mapping
+		if (node.getName() == "STR$")
+		{
+			auto index = popIndex();
+			assert(index.type.base == BaseType_Integer);
+
+			auto ix = pushIndex(BaseType_String);
+			m_writer.indent();
+			m_writer << "zrt_String* " << ix << " = zrt_str_new_from_int(" << index << ");\n";
+
+			destroyIndex(index);
+		}
+
+	}
+
+	void CTranslator::translate(const Nodes::IdentifierExpressionNode& node)
+	{
+		pushIndex(node.getSymbol());
 	}
 
 	void CTranslator::translate(const Nodes::IntegerLiteralNode& node)
 	{
-		auto value = node.getValue();
-		auto id = makeTemp(BaseType_Integer);
-
-		indent();
-		fprintf(m_file, "zrt_Int t_%d = %lld;\n", id, value);
+		auto ix = pushIndex(BaseType_Integer);
+		m_writer.indent();
+		m_writer << "zrt_Int " << ix << " = " << node.getValue() << ";\n";
 	}
 
 	void CTranslator::translate(const Nodes::PrintStatementNode& node)
@@ -145,49 +334,71 @@ namespace ZeeBasic::Compiler
 		if (expr)
 		{
 			expr->translate(*this);
-			auto temp = m_temps.top();
-			m_temps.pop();
+			auto index = popIndex();
 
-			indent();
-
-			switch (temp.type.base)
+			m_writer.indent();
+			switch (index.type.base)
 			{
+
 			case BaseType_Integer:
-				fprintf(m_file, "zrt_println_int(t_%d);\n", temp.id);
+				m_writer << "zrt_println_int(" << index << ");\n";
 				break;
+
+			case BaseType_String:
+				m_writer << "zrt_println_str(" << index << ");\n";
+				break;
+
 			default:
 				assert(false);
 				break;
+
 			}
 
-			destroyTemp(temp);
+			destroyIndex(index);
 		}
 		else
 		{
-			indent();
-			fprintf(m_file, "zrt_println();\n");
+			m_writer.indent();
+			m_writer << "zrt_println();\n";
 		}
 	}
 
-	void CTranslator::indent()
+	void CTranslator::translate(const Nodes::StringLiteralNode& node)
 	{
-		for (int i = 0; i < m_indent; ++i)
+		auto ix = pushIndex(BaseType_String);
+		m_writer.indent();
+		m_writer << "zrt_String* " << ix << " = zrt_str_new(\"" << node.getValue().getText() << "\");\n";
+	}
+
+	int CTranslator::pushIndex(const Symbol& symbol)
+	{
+		m_variableIndices.emplace_back(symbol);
+		return int(m_variableIndices.size() - 1);
+	}
+
+	int CTranslator::pushIndex(const Type& type)
+	{
+		m_variableIndices.emplace_back(type);
+		m_variableIndices.back().id = m_nextTempId++;
+		return int(m_variableIndices.size() - 1);
+	}
+
+	CTranslator::VariableIndex CTranslator::popIndex()
+	{
+		auto top = m_variableIndices.back();
+		m_variableIndices.pop_back();
+		return top;
+	}
+
+	void CTranslator::destroyIndex(const VariableIndex& index)
+	{
+		if (index.indexType == IndexType::Temporary)
 		{
-			fputc(' ', m_file);
+			if (index.type.base == BaseType_String)
+			{
+				m_writer.indent();
+				m_writer << "zrt_str_del(" << index << ");\n";
+			}
 		}
-	}
-
-	int CTranslator::makeTemp(Type type)
-	{
-		auto id = m_nextTempId++;
-
-		m_temps.emplace(type, id);
-
-		return id;
-	}
-
-	void CTranslator::destroyTemp(const Temporary& temp)
-	{
-		// TODO
 	}
 }

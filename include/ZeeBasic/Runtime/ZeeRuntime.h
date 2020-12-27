@@ -34,4 +34,18 @@ typedef int64_t zrt_Int;
 
 void zrt_init(int argc, char* argv[]);
 
+typedef struct zrt_String {
+	zrt_Int length;
+	zrt_Int capacity;
+	char* data;
+} zrt_String;
+
+zrt_String* zrt_str_empty();
+zrt_String* zrt_str_new(const char* text);
+zrt_String* zrt_str_new_from_int(zrt_Int value);
+zrt_String* zrt_str_concat(zrt_String* lhs, zrt_String* rhs);
+void zrt_str_copy(zrt_String* dst, zrt_String* src);
+void zrt_str_del(zrt_String* str);
+
 void zrt_println_int(zrt_Int arg);
+void zrt_println_str(zrt_String* arg);

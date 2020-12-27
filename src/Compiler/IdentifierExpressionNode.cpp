@@ -25,42 +25,43 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 #include <cassert>
+#include <cstdlib>
 
-#include "ZeeBasic/Compiler/ExpressionNode.hpp"
+#include "ZeeBasic/Compiler/IdentifierExpressionNode.hpp"
 
-#include "ZeeBasic/Compiler/AssignmentStatementNode.hpp"
-#include "ZeeBasic/Compiler/IParser.hpp"
-#include "ZeeBasic/Compiler/PrintStatementNode.hpp"
+#include "ZeeBasic/Compiler/SymbolTable.hpp"
 
 namespace ZeeBasic::Compiler::Nodes
 {
 
-	std::unique_ptr<Node> parseStatement(IParser& parser)
+	void IdentifierExpressionNode::parse(IParser& parser)
 	{
 		auto& token = parser.getToken();
+		auto& name = token.text;
 
-		auto node = std::unique_ptr<Node>{};
-		switch (token.id)
+		auto type = Type{};
+		if (name.endsWith('$'))
 		{
-
-		case TokenId::UntypedName:
-		case TokenId::TypedName:
-			// TODO : check for user function call
-			node = std::make_unique<AssignmentStatementNode>();
-			break;
-
-		case TokenId::Key_PRINT:
-			node = std::make_unique<PrintStatementNode>();
-			break;
-
-		default:
-			return {};
-
+			type.base = BaseType_String;
+		}
+		else
+		{
+			type.base = BaseType_Integer;
 		}
 
-		assert(node);
-		node->parse(parser);
-		return node;		
+		m_symbol = parser.getSymbolTable().findOrCreateSymbol(name, token.range, type);
+		m_range = token.range;
+		parser.eatToken();
+	}
+
+	void IdentifierExpressionNode::analyze(IAnalyzer& analyzer)
+	{
+		m_type = m_symbol->type;
+	}
+
+	void IdentifierExpressionNode::translate(ITranslator& translator)
+	{
+		translator.translate(*this);
 	}
 
 }

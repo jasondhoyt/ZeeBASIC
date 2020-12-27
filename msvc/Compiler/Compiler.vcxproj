@@ -81,13 +81,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Analyzer.hpp" />
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\AssignmentStatementNode.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\BinaryExpressionNode.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\ConstString.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\CTranslator.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Error.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\ExpressionNode.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\FileSourceReader.hpp" />
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\FunctionCallExpressionNode.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\IAnalyzer.hpp" />
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\IdentifierExpressionNode.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\IntegerLiteralNode.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\IParser.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\ISourceReader.hpp" />
@@ -100,23 +103,31 @@
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Program.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Range.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\StatementNode.hpp" />
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\StringLiteralNode.hpp" />
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\Symbol.hpp" />
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\SymbolTable.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Token.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\TokenId.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Type.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Compiler\Analyzer.cpp" />
+    <ClCompile Include="..\..\src\Compiler\AssignmentStatementNode.cpp" />
     <ClCompile Include="..\..\src\Compiler\BinaryExpressionNode.cpp" />
     <ClCompile Include="..\..\src\Compiler\ConstString.cpp" />
     <ClCompile Include="..\..\src\Compiler\CTranslator.cpp" />
     <ClCompile Include="..\..\src\Compiler\Error.cpp" />
     <ClCompile Include="..\..\src\Compiler\ExpressionNode.cpp" />
     <ClCompile Include="..\..\src\Compiler\FileSourceReader.cpp" />
+    <ClCompile Include="..\..\src\Compiler\FunctionCallExpressionNode.cpp" />
+    <ClCompile Include="..\..\src\Compiler\IdentifierExpressionNode.cpp" />
     <ClCompile Include="..\..\src\Compiler\IntegerLiteralNode.cpp" />
     <ClCompile Include="..\..\src\Compiler\LexicalAnalyzer.cpp" />
     <ClCompile Include="..\..\src\Compiler\Parser.cpp" />
     <ClCompile Include="..\..\src\Compiler\PrintStatementNode.cpp" />
     <ClCompile Include="..\..\src\Compiler\StatementNode.cpp" />
+    <ClCompile Include="..\..\src\Compiler\StringLiteralNode.cpp" />
+    <ClCompile Include="..\..\src\Compiler\SymbolTable.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

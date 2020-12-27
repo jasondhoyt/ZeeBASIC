@@ -22,57 +22,25 @@
 // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 #pragma once
 
-#include <cstdint>
+#include "ConstString.hpp"
+#include "Range.hpp"
+#include "Type.hpp"
 
 namespace ZeeBasic::Compiler
 {
 
-    // Defines a pair of line/column locations that designate a piece of source code.
-    struct Range
-    {
-        Range() : startCol(0), endCol(0), startLine(0), endLine(0) { }
-        Range(int lineNo, int colNo) : startCol(colNo), endCol(colNo), startLine(lineNo), endLine(lineNo) { }
-        Range(const Range& start, const Range& end)
-            :
-            startCol(start.startCol),
-            endCol(end.endCol),
-            startLine(start.startLine),
-            endLine(end.endLine)
-        { }
-        ~Range() { }
+	struct Symbol
+	{
+		int index;
+		ConstString name;
+		Range range;
+		Type type;
 
-        Range(const Range&) = default;
-        Range(Range&&) = default;
-        Range& operator=(const Range&) = default;
-        Range& operator=(Range&&) = default;
-
-        uint64_t startCol : 8;
-        uint64_t endCol : 8;
-        uint64_t startLine : 24;
-        uint64_t endLine : 24;
-
-        Range& operator+=(const Range& rhs)
-        {
-            endCol = rhs.endCol;
-            endLine = rhs.endLine;
-            return *this;
-        }
-
-        Range& operator++()
-        {
-            ++endCol;
-            return *this;
-        }
-
-        friend Range operator+(Range lhs, const Range& rhs)
-        {
-            lhs += rhs;
-            return lhs;
-        }
-    };
+		Symbol(int index, const ConstString& name, const Range& range, Type type) : index(index), name(name), range(range), type(type) { }
+	};
 
 }

@@ -90,6 +90,24 @@
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\BinaryExpressionNode.hpp">
       <Filter>Header Files\Nodes</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\StringLiteralNode.hpp">
+      <Filter>Header Files\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\FunctionCallExpressionNode.hpp">
+      <Filter>Header Files\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\Symbol.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\SymbolTable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\AssignmentStatementNode.hpp">
+      <Filter>Header Files\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\IdentifierExpressionNode.hpp">
+      <Filter>Header Files\Nodes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Compiler\ConstString.cpp">
@@ -126,6 +144,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Compiler\BinaryExpressionNode.cpp">
+      <Filter>Source Files\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\StringLiteralNode.cpp">
+      <Filter>Source Files\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\FunctionCallExpressionNode.cpp">
+      <Filter>Source Files\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\SymbolTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\AssignmentStatementNode.cpp">
+      <Filter>Source Files\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\IdentifierExpressionNode.cpp">
       <Filter>Source Files\Nodes</Filter>
     </ClCompile>
   </ItemGroup>

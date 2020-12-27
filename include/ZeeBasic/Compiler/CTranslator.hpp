@@ -27,11 +27,12 @@
 #pragma once
 
 #include <cstdio>
-#include <stack>
 #include <string>
+#include <vector>
 
 #include "ITranslator.hpp"
 
+#include "Symbol.hpp"
 #include "Type.hpp"
 
 namespace ZeeBasic::Compiler
@@ -47,31 +48,71 @@ namespace ZeeBasic::Compiler
 
 		void run() override;
 
+		void translate(const Nodes::AssignmentStatementNode& node) override;
 		void translate(const Nodes::BinaryExpressionNode& node) override;
+		void translate(const Nodes::FunctionCallExpressionNode& node) override;
+		void translate(const Nodes::IdentifierExpressionNode& node) override;
 		void translate(const Nodes::IntegerLiteralNode& node) override;
 		void translate(const Nodes::PrintStatementNode& node) override;
+		void translate(const Nodes::StringLiteralNode& node) override;
 
 	private:
-		FILE* m_file;
+		FILE* m_file = nullptr;
 
 		const Program& m_program;
 
-		int m_indent;
-
-		struct Temporary
+		enum class IndexType
 		{
-			Type type;
-			int id;
-
-			Temporary(Type type, int id) : type(type), id(id) { }
+			Temporary,
+			Local
 		};
-		std::stack<Temporary> m_temps;
 
-		int m_nextTempId;
+		struct VariableIndex
+		{
+			IndexType indexType;
+			Type type;
+			union
+			{
+				int id;
+				const Symbol* symbol = nullptr;
+			};
 
-		void indent();
-		int makeTemp(Type type);
-		void destroyTemp(const Temporary& temp);
+			VariableIndex(const Symbol& symbol) : indexType(IndexType::Local), type(symbol.type), symbol(&symbol) { }
+			VariableIndex(Type type) : indexType(IndexType::Temporary), type(type), id(0) { }
+		};
+		std::vector<VariableIndex> m_variableIndices;
+
+		int m_nextTempId = 1;
+
+		class Writer
+		{
+		public:
+			Writer(std::vector<VariableIndex>& variableIndices);
+			void setFile(FILE* file);
+
+			void indent();
+			void pushIndent();
+			void popIndent();
+
+			Writer& operator<<(char ch);
+			Writer& operator<<(const char* text);
+			Writer& operator<<(int64_t value);
+			Writer& operator<<(int index);
+			Writer& operator<<(const VariableIndex& index);
+			Writer& operator<<(const Symbol& symbol);
+
+		private:
+			std::vector<VariableIndex>& m_variableIndices;
+			FILE* m_outFile = nullptr;
+			int m_indent = 0;
+		};
+
+		Writer m_writer;
+
+		int pushIndex(const Symbol& symbol);
+		int pushIndex(const Type& type);
+		VariableIndex popIndex();
+		void destroyIndex(const VariableIndex& index);
 	};
 
 }

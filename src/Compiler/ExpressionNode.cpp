@@ -29,7 +29,11 @@
 #include "ZeeBasic/Compiler/ExpressionNode.hpp"
 
 #include "ZeeBasic/Compiler/BinaryExpressionNode.hpp"
+#include "ZeeBasic/Compiler/Error.hpp"
+#include "ZeeBasic/Compiler/FunctionCallExpressionNode.hpp"
+#include "ZeeBasic/Compiler/IdentifierExpressionNode.hpp"
 #include "ZeeBasic/Compiler/IntegerLiteralNode.hpp"
+#include "ZeeBasic/Compiler/StringLiteralNode.hpp"
 
 namespace ZeeBasic::Compiler::Nodes
 {
@@ -71,6 +75,22 @@ namespace ZeeBasic::Compiler::Nodes
 		return (BinaryExpressionNode::Operator)0;
 	}
 
+	static bool isBuiltinFunction(TokenId id)
+	{
+		switch (id)
+		{
+
+		case TokenId::Key_STR_S:
+			return true;
+
+		default:
+			break;
+
+		}
+
+		return false;
+	}
+
 	static std::unique_ptr<ExpressionNode> parseSubExpression(IParser& parser, int prec)
 	{
 		auto& token = parser.getToken();
@@ -83,6 +103,10 @@ namespace ZeeBasic::Compiler::Nodes
 			lhs = std::make_unique<IntegerLiteralNode>();
 			break;
 
+		case TokenId::String:
+			lhs = std::make_unique<StringLiteralNode>();
+			break;
+
 		case TokenId::Sym_OpenParen:
 			parser.eatToken();
 			lhs = parseSubExpression(parser, 0);
@@ -90,8 +114,21 @@ namespace ZeeBasic::Compiler::Nodes
 			parser.eatToken();
 			break;
 
+		case TokenId::TypedName:
+		case TokenId::UntypedName:
+			// TODO : user-defined function
+			lhs = std::make_unique<IdentifierExpressionNode>();
+			break;
+
 		default:
-			return {};
+			if (isBuiltinFunction(token.id))
+			{
+				lhs = std::make_unique<FunctionCallExpressionNode>();
+			}
+			else
+			{
+				return {};
+			}
 
 		}
 
@@ -108,7 +145,13 @@ namespace ZeeBasic::Compiler::Nodes
 			parser.eatToken();
 
 			auto rhs = parseSubExpression(parser, newPrec);
+			if (!rhs)
+			{
+				throw Error::create(parser.getToken().range, "Expected expression for right-hand side of operator");
+			}
+
 			lhs = std::make_unique<BinaryExpressionNode>(mapBinaryOperator(id), std::move(lhs), std::move(rhs));
+			lhs->parse(parser);
 		}
 
 		return lhs;

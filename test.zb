@@ -1,1 +1,2 @@
-PRINT (2 + 2) * 5
+s$ = "Hi " + STR$(10)
+PRINT s$

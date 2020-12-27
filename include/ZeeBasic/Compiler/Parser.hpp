@@ -52,6 +52,7 @@ namespace ZeeBasic::Compiler
 		const Token& expectToken(TokenId id) override;
 		void eatToken() override;
 		void eatEndOfLine() override;
+		SymbolTable& getSymbolTable() override;
 
 	private:
 		LexicalAnalyzer m_lexicalAnalyzer;

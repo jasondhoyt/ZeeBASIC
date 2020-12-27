@@ -27,6 +27,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "ZeeBasic/Runtime/ZeeRuntime.h"
 
@@ -35,7 +37,100 @@ void zrt_init(int argc, char* argv[])
 	/* TODO */
 }
 
+zrt_String* zrt_str_empty()
+{
+	zrt_String* str = malloc(sizeof(zrt_String));
+	if (!str) abort();
+
+	str->capacity = 16;
+	str->length = 0;
+	str->data = malloc(sizeof(char) * str->capacity);
+	if (!str->data) abort();
+	
+	return str;
+}
+
+zrt_String* zrt_str_new(const char* text)
+{
+	zrt_String* str = malloc(sizeof(zrt_String));
+	if (!str) abort();
+
+	zrt_Int cap = 16;
+	zrt_Int len = strlen(text);
+	while (cap < len)
+	{
+		cap *= 2;
+	}
+
+	str->capacity = cap;
+	str->length = len;
+	str->data = malloc(sizeof(char) * str->capacity);
+	if (!str->data) abort();
+	memcpy(str->data, text, len);
+
+	return str;
+}
+
+zrt_String* zrt_str_new_from_int(zrt_Int value)
+{
+	char buf[16];
+	snprintf(buf, sizeof(buf), "%lld", value);
+	return zrt_str_new(buf);
+}
+
+zrt_String* zrt_str_concat(zrt_String* lhs, zrt_String* rhs)
+{
+	zrt_String* str = malloc(sizeof(zrt_String));
+	if (!str) abort();
+
+	zrt_Int cap = 16;
+	zrt_Int len = lhs->length + rhs->length;
+	while (cap < len)
+	{
+		cap *= 2;
+	}
+
+	str->capacity = cap;
+	str->length = len;
+	str->data = malloc(sizeof(char) * str->capacity);
+	if (!str->data) abort();
+	memcpy(str->data, lhs->data, lhs->length);
+	memcpy(str->data + lhs->length, rhs->data, rhs->length);
+
+	return str;
+}
+
+void zrt_str_copy(zrt_String* dst, zrt_String* src)
+{
+	if (dst->capacity < src->length)
+	{
+		while (dst->capacity < src->length)
+		{
+			dst->capacity *= 2;
+		}
+
+		free(dst->data);
+		dst->data = malloc(sizeof(char) * dst->capacity);
+		if (!dst->data) abort();
+	}
+
+	memcpy(dst->data, src->data, src->length);
+	dst->length = src->length;
+}
+
+void zrt_str_del(zrt_String* str)
+{
+	free(str->data);
+	free(str);
+}
+
 void zrt_println_int(zrt_Int arg)
 {
 	printf("%lld\n", arg);
+}
+
+void zrt_println_str(zrt_String* arg)
+{
+	fwrite(arg->data, sizeof(char), arg->length, stdout);
+	fputc('\n', stdout);
 }

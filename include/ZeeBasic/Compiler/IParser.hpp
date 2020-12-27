@@ -31,6 +31,8 @@
 namespace ZeeBasic::Compiler
 {
 
+	class SymbolTable;
+
 	class IParser
 	{
 	public:
@@ -41,6 +43,7 @@ namespace ZeeBasic::Compiler
 		virtual const Token& expectToken(TokenId id) = 0;
 		virtual void eatToken() = 0;
 		virtual void eatEndOfLine() = 0;
+		virtual SymbolTable& getSymbolTable() = 0;
 	};
 
 }

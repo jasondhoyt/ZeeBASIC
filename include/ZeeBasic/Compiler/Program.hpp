@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "Node.hpp"
+#include "SymbolTable.hpp"
 
 namespace ZeeBasic::Compiler
 {
@@ -37,6 +38,7 @@ namespace ZeeBasic::Compiler
 	struct Program
 	{
 		std::vector<std::unique_ptr<Nodes::Node>> statements;
+		SymbolTable symbols;
 	};
 
 }

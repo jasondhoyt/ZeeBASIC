@@ -24,43 +24,67 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#include <cassert>
-
-#include "ZeeBasic/Compiler/ExpressionNode.hpp"
-
 #include "ZeeBasic/Compiler/AssignmentStatementNode.hpp"
-#include "ZeeBasic/Compiler/IParser.hpp"
-#include "ZeeBasic/Compiler/PrintStatementNode.hpp"
+
+#include "ZeeBasic/Compiler/Error.hpp"
+#include "ZeeBasic/Compiler/ExpressionNode.hpp"
+#include "ZeeBasic/Compiler/SymbolTable.hpp"
 
 namespace ZeeBasic::Compiler::Nodes
 {
 
-	std::unique_ptr<Node> parseStatement(IParser& parser)
+	void AssignmentStatementNode::parse(IParser& parser)
 	{
 		auto& token = parser.getToken();
+		auto& name = token.text;
 
-		auto node = std::unique_ptr<Node>{};
-		switch (token.id)
+		auto type = Type{};
+		if (name.endsWith('$'))
 		{
+			type.base = BaseType_String;
+		}
+		else
+		{
+			type.base = BaseType_Integer;
+		}
+		
+		m_symbol = parser.getSymbolTable().findOrCreateSymbol(name, token.range, type);
 
-		case TokenId::UntypedName:
-		case TokenId::TypedName:
-			// TODO : check for user function call
-			node = std::make_unique<AssignmentStatementNode>();
-			break;
+		parser.eatToken();
+		if (parser.getToken().id != TokenId::Sym_Equal)
+		{
+			throw Error::create(parser.getToken().range, "Expected equals after variable name for assignment");
+		}
+		m_range = parser.getToken().range;
+		parser.eatToken();
 
-		case TokenId::Key_PRINT:
-			node = std::make_unique<PrintStatementNode>();
-			break;
-
-		default:
-			return {};
-
+		m_expr = ExpressionNode::parseExpression(parser);
+		if (!m_expr)
+		{
+			throw Error::create(parser.getToken().range, "Expected expression for assignment");
 		}
 
-		assert(node);
-		node->parse(parser);
-		return node;		
+		parser.eatEndOfLine();
+	}
+
+	void AssignmentStatementNode::analyze(IAnalyzer& analyzer)
+	{
+		if (m_expr)
+		{
+			m_expr->analyze(analyzer);
+		}
+
+		// TODO : implicit type conversions (int-based)
+
+		if (m_expr->getType().base != m_symbol->type.base)
+		{
+			throw Error::create(m_range, "Unable to implicitly cast type");
+		}
+	}
+
+	void AssignmentStatementNode::translate(ITranslator& translator)
+	{
+		translator.translate(*this);
 	}
 
 }

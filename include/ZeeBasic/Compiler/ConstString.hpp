@@ -42,9 +42,12 @@ namespace ZeeBasic::Compiler
         ConstString& operator=(ConstString&&) = default;
 
         bool operator==(const char* text) const;
+        bool operator==(const ConstString& str) const;
 
         const char* getText() const { return m_text; }
         int getLength() const { return m_length; }
+
+        bool endsWith(char ch) const;
 
     private:
         const char* m_text;

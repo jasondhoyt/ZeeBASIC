@@ -25,42 +25,80 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 #include <cassert>
+#include <cstdlib>
 
-#include "ZeeBasic/Compiler/ExpressionNode.hpp"
+#include "ZeeBasic/Compiler/FunctionCallExpressionNode.hpp"
 
-#include "ZeeBasic/Compiler/AssignmentStatementNode.hpp"
-#include "ZeeBasic/Compiler/IParser.hpp"
-#include "ZeeBasic/Compiler/PrintStatementNode.hpp"
+#include "ZeeBasic/Compiler/Error.hpp"
 
 namespace ZeeBasic::Compiler::Nodes
 {
 
-	std::unique_ptr<Node> parseStatement(IParser& parser)
+	void FunctionCallExpressionNode::parse(IParser& parser)
 	{
 		auto& token = parser.getToken();
+		m_name = token.text;
+		// TODO
+		m_range = token.range;
+		parser.eatToken();
 
-		auto node = std::unique_ptr<Node>{};
-		switch (token.id)
+		if (parser.getToken().id == TokenId::Sym_OpenParen)
 		{
+			parser.eatToken();
 
-		case TokenId::UntypedName:
-		case TokenId::TypedName:
-			// TODO : check for user function call
-			node = std::make_unique<AssignmentStatementNode>();
-			break;
+			while (true)
+			{
+				auto expr = parseExpression(parser);
+				if (!expr)
+				{
+					throw Error::create(parser.getToken().range, "Expected argument for function call");
+				}
 
-		case TokenId::Key_PRINT:
-			node = std::make_unique<PrintStatementNode>();
-			break;
+				m_arguments.emplace_back(std::move(expr));
 
-		default:
-			return {};
+				if (parser.getToken().id != TokenId::Sym_Comma)
+				{
+					break;
+				}
 
+				parser.eatToken();
+			}
+
+			parser.expectToken(TokenId::Sym_CloseParen);
+			parser.eatToken();
+		}
+	}
+
+	void FunctionCallExpressionNode::analyze(IAnalyzer& analyzer)
+	{
+		for (auto& arg : m_arguments)
+		{
+			arg->analyze(analyzer);
 		}
 
-		assert(node);
-		node->parse(parser);
-		return node;		
+		// TODO : better lookup for built-in function types
+		if (m_name == "STR$")
+		{
+			m_type = Type{ BaseType_String };
+			if (m_arguments.size() != 1)
+			{
+				throw Error::create(m_range, "Bad arguments for built-in function");
+			}
+
+			if (m_arguments[0]->getType().base != BaseType_Integer)
+			{
+				throw Error::create(m_range, "Expected integer argument for built-in function");
+			}
+		}
+		else
+		{
+			assert(false);
+		}
+	}
+
+	void FunctionCallExpressionNode::translate(ITranslator& translator)
+	{
+		translator.translate(*this);
 	}
 
 }

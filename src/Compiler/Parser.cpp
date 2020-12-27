@@ -55,6 +55,11 @@ namespace ZeeBasic::Compiler
 			m_program.statements.push_back(std::move(stm));
 			stm = Nodes::parseStatement(*this);
 		}
+
+		if (getToken().id != TokenId::EndOfCode)
+		{
+			throw Error::create(getToken().range, "Expected statement");
+		}
 	}
 
 	const Token& Parser::getToken(int lookAhead)
@@ -113,4 +118,8 @@ namespace ZeeBasic::Compiler
 		eatToken();
 	}
 
+	SymbolTable& Parser::getSymbolTable()
+	{
+		return m_program.symbols;
+	}
 }

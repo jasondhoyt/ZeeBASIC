@@ -26,6 +26,8 @@
 
 #include "ZeeBasic/Compiler/BinaryExpressionNode.hpp"
 
+#include "ZeeBasic/Compiler/Error.hpp"
+
 namespace ZeeBasic::Compiler::Nodes
 {
 
@@ -40,12 +42,28 @@ namespace ZeeBasic::Compiler::Nodes
 	{ }
 
 	void BinaryExpressionNode::parse(IParser& parser)
-	{ }
+	{ 
+		m_range = Range{ m_lhs->getRange(), m_rhs->getRange() };
+	}
 
 	void BinaryExpressionNode::analyze(IAnalyzer& analyzer)
 	{
-		// TODO
-		m_type = Type{ BaseType_Integer };
+		m_lhs->analyze(analyzer);
+		m_rhs->analyze(analyzer);
+
+		const auto& lhsType = m_lhs->getType();
+		const auto& rhsType = m_rhs->getType();
+
+		if (lhsType.base != rhsType.base)
+		{
+			// TODO : implicit conversion where possible
+			// TODO : bad error message
+			throw Error::create(m_range, "Unable to implicitly cast right-hand side to left-hand side");
+		}
+		else
+		{
+			m_type = lhsType;
+		}
 	}
 
 	void BinaryExpressionNode::translate(ITranslator& translator)

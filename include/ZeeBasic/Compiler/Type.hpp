@@ -44,6 +44,7 @@ namespace ZeeBasic::Compiler
 		int base;
 		bool isArray;
 
+		Type() : base(BaseType_Unknown), isArray(false) { }
 		Type(int base, bool isArray = false) : base(base), isArray(isArray) { }
 	};
 

@@ -25,42 +25,38 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 #include <cassert>
+#include <cstdlib>
 
-#include "ZeeBasic/Compiler/ExpressionNode.hpp"
-
-#include "ZeeBasic/Compiler/AssignmentStatementNode.hpp"
-#include "ZeeBasic/Compiler/IParser.hpp"
-#include "ZeeBasic/Compiler/PrintStatementNode.hpp"
+#include "ZeeBasic/Compiler/StringLiteralNode.hpp"
 
 namespace ZeeBasic::Compiler::Nodes
 {
 
-	std::unique_ptr<Node> parseStatement(IParser& parser)
+	StringLiteralNode::StringLiteralNode()
+		:
+		ExpressionNode(),
+		m_value()
+	{ }
+
+	StringLiteralNode::~StringLiteralNode()
+	{ }
+
+	void StringLiteralNode::parse(IParser& parser)
 	{
-		auto& token = parser.getToken();
+		auto& token = parser.expectToken(TokenId::String);
+		m_range = token.range;
+		m_value = token.text;
+		parser.eatToken();
+	}
 
-		auto node = std::unique_ptr<Node>{};
-		switch (token.id)
-		{
+	void StringLiteralNode::analyze(IAnalyzer& analyzer)
+	{
+		m_type = Type{ BaseType_String };
+	}
 
-		case TokenId::UntypedName:
-		case TokenId::TypedName:
-			// TODO : check for user function call
-			node = std::make_unique<AssignmentStatementNode>();
-			break;
-
-		case TokenId::Key_PRINT:
-			node = std::make_unique<PrintStatementNode>();
-			break;
-
-		default:
-			return {};
-
-		}
-
-		assert(node);
-		node->parse(parser);
-		return node;		
+	void StringLiteralNode::translate(ITranslator& translator)
+	{
+		translator.translate(*this);
 	}
 
 }

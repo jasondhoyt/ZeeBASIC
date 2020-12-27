@@ -26,6 +26,8 @@
 
 #include "ZeeBasic/Compiler/Analyzer.hpp"
 
+#include "ZeeBasic/Compiler/Program.hpp"
+
 namespace ZeeBasic::Compiler
 {
 
@@ -39,7 +41,10 @@ namespace ZeeBasic::Compiler
 
 	void Analyzer::run()
 	{
-
+		for (auto& stm : m_program.statements)
+		{
+			stm->analyze(*this);
+		}
 	}
 
 }

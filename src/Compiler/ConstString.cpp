@@ -88,4 +88,28 @@ namespace ZeeBasic::Compiler
 #endif
     }
 
+    bool ConstString::operator==(const ConstString& str) const
+    {
+        if (m_length == str.m_length)
+        {
+#ifdef _WIN32
+            return _stricmp(m_text, str.m_text) == 0;
+#else
+            return strcasecmp(m_text, str.m_text) == 0;
+#endif
+        }
+
+        return false;
+    }
+
+    bool ConstString::endsWith(char ch) const
+    {
+        if (m_length > 0)
+        {
+            return m_text[m_length - 1] == ch;
+        }
+
+        return false;
+    }
+
 }
