@@ -44,13 +44,7 @@ namespace ZeeBasic::Compiler::Nodes
 	void BinaryExpressionNode::parse(IParser& parser)
 	{ 
 		m_range = Range{ m_lhs->getRange(), m_rhs->getRange() };
-	}
-
-	void BinaryExpressionNode::analyze(IAnalyzer& analyzer)
-	{
-		m_lhs->analyze(analyzer);
-		m_rhs->analyze(analyzer);
-
+		
 		const auto& lhsType = m_lhs->getType();
 		const auto& rhsType = m_rhs->getType();
 
@@ -66,7 +60,8 @@ namespace ZeeBasic::Compiler::Nodes
 		}
 	}
 
-	void BinaryExpressionNode::translate(ITranslator& translator)
+
+	void BinaryExpressionNode::translate(ITranslator& translator) const
 	{
 		translator.translate(*this);
 	}

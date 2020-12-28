@@ -31,11 +31,14 @@
 
 #include "ZeeBasic/Compiler/AssignmentStatementNode.hpp"
 #include "ZeeBasic/Compiler/BinaryExpressionNode.hpp"
+#include "ZeeBasic/Compiler/BooleanLiteralNode.hpp"
+#include "ZeeBasic/Compiler/CastExpressionNode.hpp"
 #include "ZeeBasic/Compiler/FunctionCallExpressionNode.hpp"
 #include "ZeeBasic/Compiler/IdentifierExpressionNode.hpp"
 #include "ZeeBasic/Compiler/IntegerLiteralNode.hpp"
 #include "ZeeBasic/Compiler/PrintStatementNode.hpp"
 #include "ZeeBasic/Compiler/Program.hpp"
+#include "ZeeBasic/Compiler/RealLiteralNode.hpp"
 #include "ZeeBasic/Compiler/StringLiteralNode.hpp"
 
 namespace ZeeBasic::Compiler
@@ -87,6 +90,19 @@ namespace ZeeBasic::Compiler
 		return *this;
 	}
 
+	CTranslator::Writer& CTranslator::Writer::operator<<(bool value)
+	{
+		if (value)
+		{
+			fputc('1', m_outFile);
+		}
+		else
+		{
+			fputc('0', m_outFile);
+		}
+		return *this;
+	}
+
 	CTranslator::Writer& CTranslator::Writer::operator<<(int index)
 	{
 		return operator<<(m_variableIndices[index]);
@@ -118,6 +134,18 @@ namespace ZeeBasic::Compiler
 		{
 			appendChar = 's';
 		}
+		else if (lastChar == '?')
+		{
+			appendChar = 'b';
+		}
+		else if (lastChar == '!')
+		{
+			appendChar = 'r';
+		}
+		else if (lastChar == '%')
+		{
+			appendChar = 'i';
+		}
 
 		if (appendChar == 0)
 		{
@@ -126,7 +154,7 @@ namespace ZeeBasic::Compiler
 		}
 		else
 		{
-			fwrite(symbol.name.getText(), sizeof(char), len - 1, m_outFile);
+			fwrite(symbol.name.getText(), sizeof(char), size_t(len) - 1, m_outFile);
 			fputc('_', m_outFile);
 			fputc(appendChar, m_outFile);
 		}
@@ -180,8 +208,16 @@ namespace ZeeBasic::Compiler
 			switch (symbol->type.base)
 			{
 
+			case BaseType_Boolean:
+				m_writer << "zrt_Bool " << *symbol << " = 0;\n";
+				break;
+
 			case BaseType_Integer:
 				m_writer << "zrt_Int " << *symbol << " = 0;\n";
+				break;
+
+			case BaseType_Real:
+				m_writer << "zrt_Real " << *symbol << " = 0.0;\n";
 				break;
 
 			case BaseType_String:
@@ -293,6 +329,82 @@ namespace ZeeBasic::Compiler
 		destroyIndex(lhs);	
 	}
 
+	void CTranslator::translate(const Nodes::BooleanLiteralNode& node)
+	{
+		auto ix = pushIndex(BaseType_Boolean);
+		m_writer.indent();
+		m_writer << "zrt_Bool " << ix << " = " << node.getValue() << ";\n";
+	}
+
+	void CTranslator::translate(const Nodes::CastExpressionNode& node)
+	{
+		node.getExpression().translate(*this);
+		
+		auto index = popIndex();
+
+		m_writer.indent();
+		switch (node.getType().base)
+		{
+
+		case BaseType_Boolean:
+			if (index.type.base == BaseType_Integer)
+			{
+				auto ix = pushIndex(BaseType_Boolean);
+				m_writer << "zrt_Bool " << ix << " = " << index << " != 0;\n";
+			}
+			else if (index.type.base == BaseType_Real)
+			{
+				auto ix = pushIndex(BaseType_Boolean);
+				m_writer << "zrt_Bool " << ix << " = " << index << " != 0.0;\n";
+			}
+			else
+			{
+				assert(false);
+			}
+			break;
+
+		case BaseType_Integer:
+			if (index.type.base == BaseType_Boolean)
+			{
+				auto ix = pushIndex(BaseType_Integer);
+				m_writer << "zrt_Int " << ix << " = " << index << " == 0 ? 0 : 1;\n";
+			}
+			else if (index.type.base == BaseType_Real)
+			{
+				auto ix = pushIndex(BaseType_Integer);
+				m_writer << "zrt_Int " << ix << " = (zrt_Int)" << index << ";\n";
+			}
+			else
+			{
+				assert(false);
+			}				
+			break;
+
+		case BaseType_Real:
+			if (index.type.base == BaseType_Boolean)
+			{
+				auto ix = pushIndex(BaseType_Real);
+				m_writer << "zrt_Real " << ix << " = " << index << " == 0 ? 0.0 : 1.0;\n";
+			}
+			else if (index.type.base == BaseType_Integer)
+			{
+				auto ix = pushIndex(BaseType_Real);
+				m_writer << "zrt_Real " << ix << " = (zrt_Real)" << index << ";\n";
+			}
+			else
+			{
+				assert(false);
+			}
+			break;
+
+		default:
+			assert(false);
+
+		}
+
+		destroyIndex(index);
+	}
+
 	void CTranslator::translate(const Nodes::FunctionCallExpressionNode& node)
 	{
 		auto& args = node.getArguments();
@@ -340,12 +452,20 @@ namespace ZeeBasic::Compiler
 			switch (index.type.base)
 			{
 
+			case BaseType_Boolean:
+				m_writer << "zrt_println_bool(" << index << ");\n";
+				break;
+
 			case BaseType_Integer:
 				m_writer << "zrt_println_int(" << index << ");\n";
 				break;
 
 			case BaseType_String:
 				m_writer << "zrt_println_str(" << index << ");\n";
+				break;
+
+			case BaseType_Real:
+				m_writer << "zrt_println_real(" << index << ");\n";
 				break;
 
 			default:
@@ -361,6 +481,13 @@ namespace ZeeBasic::Compiler
 			m_writer.indent();
 			m_writer << "zrt_println();\n";
 		}
+	}
+
+	void CTranslator::translate(const Nodes::RealLiteralNode& node)
+	{
+		auto ix = pushIndex(BaseType_Real);
+		m_writer.indent();
+		m_writer << "zrt_Real " << ix << " = " << node.getValue().getText() << ";\n";
 	}
 
 	void CTranslator::translate(const Nodes::StringLiteralNode& node)

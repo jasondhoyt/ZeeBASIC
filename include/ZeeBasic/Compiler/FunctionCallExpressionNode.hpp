@@ -40,8 +40,7 @@ namespace ZeeBasic::Compiler::Nodes
 	{
 	public:
 		void parse(IParser& parser) override;
-		void analyze(IAnalyzer& analyzer) override;
-		void translate(ITranslator& translator) override;
+		void translate(ITranslator& translator) const override;
 
 		const auto& getName() const { return m_name; }
 		const auto& getArguments() const { return m_arguments; }

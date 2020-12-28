@@ -24,27 +24,26 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#include "ZeeBasic/Compiler/Analyzer.hpp"
+#pragma once
 
-#include "ZeeBasic/Compiler/Program.hpp"
+#include "ExpressionNode.hpp"
 
-namespace ZeeBasic::Compiler
+namespace ZeeBasic::Compiler::Nodes
 {
 
-	Analyzer::Analyzer(Program& program)
+	class RealLiteralNode
 		:
-		m_program(program)
-	{ }
-
-	Analyzer::~Analyzer()
-	{ }
-
-	void Analyzer::run()
+		public ExpressionNode
 	{
-		for (auto& stm : m_program.statements)
-		{
-			stm->analyze(*this);
-		}
-	}
+	public:
+		void parse(IParser& parser) override;
+		void translate(ITranslator& translator) const override;
+
+		auto getValue() const { return m_value; }
+
+	private:
+		// use string to preserve original digits
+		ConstString m_value;
+	};
 
 }

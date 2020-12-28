@@ -24,16 +24,27 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#pragma once
+#include <cassert>
+#include <cstdlib>
 
-namespace ZeeBasic::Compiler
+#include "ZeeBasic/Compiler/RealLiteralNode.hpp"
+
+namespace ZeeBasic::Compiler::Nodes
 {
 
-	class IAnalyzer
+	void RealLiteralNode::parse(IParser& parser)
 	{
-	public:
-		IAnalyzer() { }
-		virtual ~IAnalyzer() { }
-	};
+		auto& token = parser.expectToken(TokenId::Real);
+		m_range = token.range;
+		m_value = token.text;
+		parser.eatToken();
+
+		m_type = Type{ BaseType_Real };
+	}
+
+	void RealLiteralNode::translate(ITranslator& translator) const
+	{
+		translator.translate(*this);
+	}
 
 }

@@ -26,6 +26,7 @@
 
 #include "ZeeBasic/Compiler/AssignmentStatementNode.hpp"
 
+#include "ZeeBasic/Compiler/CastExpressionNode.hpp"
 #include "ZeeBasic/Compiler/Error.hpp"
 #include "ZeeBasic/Compiler/ExpressionNode.hpp"
 #include "ZeeBasic/Compiler/SymbolTable.hpp"
@@ -35,21 +36,11 @@ namespace ZeeBasic::Compiler::Nodes
 
 	void AssignmentStatementNode::parse(IParser& parser)
 	{
-		auto& token = parser.getToken();
-		auto& name = token.text;
+		// save name for to add symbol later
+		auto& token = parser.getToken();		
+		auto name = token.text;
 
-		auto type = Type{};
-		if (name.endsWith('$'))
-		{
-			type.base = BaseType_String;
-		}
-		else
-		{
-			type.base = BaseType_Integer;
-		}
-		
-		m_symbol = parser.getSymbolTable().findOrCreateSymbol(name, token.range, type);
-
+		// finish parsing expression side first
 		parser.eatToken();
 		if (parser.getToken().id != TokenId::Sym_Equal)
 		{
@@ -65,24 +56,69 @@ namespace ZeeBasic::Compiler::Nodes
 		}
 
 		parser.eatEndOfLine();
-	}
 
-	void AssignmentStatementNode::analyze(IAnalyzer& analyzer)
-	{
-		if (m_expr)
+		auto type = Type{ };
+		if (name.endsWith('$'))
 		{
-			m_expr->analyze(analyzer);
+			type.base = BaseType_String;
+		}
+		else if (name.endsWith('?'))
+		{
+			type.base = BaseType_Boolean;
+		}
+		else if (name.endsWith('!'))
+		{
+			type.base = BaseType_Real;
+		}
+		else
+		{
+			type.base = BaseType_Integer;
 		}
 
-		// TODO : implicit type conversions (int-based)
-
+		m_symbol = parser.getSymbolTable().findOrCreateSymbol(name, token.range, type);
+		
+		
 		if (m_expr->getType().base != m_symbol->type.base)
 		{
-			throw Error::create(m_range, "Unable to implicitly cast type");
+			auto casted = false;
+
+			// perform implicit cast (for number or boolean types)
+			if (m_expr->getType().base == BaseType_Boolean)
+			{
+				// integer and real can cast to boolean
+				if (m_symbol->type.base == BaseType_Integer || m_symbol->type.base == BaseType_Real)
+				{
+					m_expr = std::make_unique<CastExpressionNode>(m_symbol->type.base, std::move(m_expr));
+					casted = true;
+				}
+			}
+			else if (m_expr->getType().base == BaseType_Integer)
+			{
+				// boolean and real can cast to integer
+				if (m_symbol->type.base == BaseType_Boolean || m_symbol->type.base == BaseType_Real)
+				{
+					m_expr = std::make_unique<CastExpressionNode>(m_symbol->type.base, std::move(m_expr));
+					casted = true;
+				}
+			}
+			else if (m_expr->getType().base == BaseType_Real)
+			{
+				// boolean and integer can cast to real
+				if (m_symbol->type.base == BaseType_Boolean || m_symbol->type.base == BaseType_Integer)
+				{
+					m_expr = std::make_unique<CastExpressionNode>(m_symbol->type.base, std::move(m_expr));
+					casted = true;
+				}
+			}
+
+			if (!casted)
+			{
+				throw Error::create(m_range, "Unable to implicitly cast type");
+			}
 		}
 	}
 
-	void AssignmentStatementNode::translate(ITranslator& translator)
+	void AssignmentStatementNode::translate(ITranslator& translator) const
 	{
 		translator.translate(*this);
 	}

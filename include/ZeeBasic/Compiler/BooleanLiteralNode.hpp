@@ -26,25 +26,23 @@
 
 #pragma once
 
-#include "IAnalyzer.hpp"
+#include "ExpressionNode.hpp"
 
-namespace ZeeBasic::Compiler
+namespace ZeeBasic::Compiler::Nodes
 {
 
-	struct Program;
-
-	class Analyzer
+	class BooleanLiteralNode
 		:
-		public IAnalyzer
+		public ExpressionNode
 	{
 	public:
-		Analyzer(Program& program);
-		virtual ~Analyzer();
+		void parse(IParser& parser) override;
+		void translate(ITranslator& translator) const override;
 
-		void run();
+		auto getValue() const { return m_value; }
 
 	private:
-		Program& m_program;
+		bool m_value = false;
 	};
 
 }

@@ -41,8 +41,7 @@ namespace ZeeBasic::Compiler::Nodes
 		virtual ~StringLiteralNode();
 
 		void parse(IParser& parser) override;
-		void analyze(IAnalyzer& analyzer) override;
-		void translate(ITranslator& translator) override;
+		void translate(ITranslator& translator) const override;
 
 		auto getValue() const { return m_value; }
 

@@ -50,10 +50,13 @@ namespace ZeeBasic::Compiler
 
 		void translate(const Nodes::AssignmentStatementNode& node) override;
 		void translate(const Nodes::BinaryExpressionNode& node) override;
+		void translate(const Nodes::BooleanLiteralNode& node) override;
+		void translate(const Nodes::CastExpressionNode& node) override;
 		void translate(const Nodes::FunctionCallExpressionNode& node) override;
 		void translate(const Nodes::IdentifierExpressionNode& node) override;
 		void translate(const Nodes::IntegerLiteralNode& node) override;
 		void translate(const Nodes::PrintStatementNode& node) override;
+		void translate(const Nodes::RealLiteralNode& node) override;
 		void translate(const Nodes::StringLiteralNode& node) override;
 
 	private:
@@ -97,6 +100,7 @@ namespace ZeeBasic::Compiler
 			Writer& operator<<(char ch);
 			Writer& operator<<(const char* text);
 			Writer& operator<<(int64_t value);
+			Writer& operator<<(bool value);
 			Writer& operator<<(int index);
 			Writer& operator<<(const VariableIndex& index);
 			Writer& operator<<(const Symbol& symbol);

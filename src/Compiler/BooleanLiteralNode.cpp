@@ -24,35 +24,42 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#include <iostream>
+#include <cassert>
+#include <cstdlib>
 
-#include "ZeeBasic/Compiler/CTranslator.hpp"
+#include "ZeeBasic/Compiler/BooleanLiteralNode.hpp"
+
 #include "ZeeBasic/Compiler/Error.hpp"
-#include "ZeeBasic/Compiler/FileSourceReader.hpp"
-#include "ZeeBasic/Compiler/Parser.hpp"
-#include "ZeeBasic/Compiler/Program.hpp"
 
-using namespace ZeeBasic::Compiler;
-
-int main(int argc, char* argv[])
+namespace ZeeBasic::Compiler::Nodes
 {
-	auto source = FileSourceReader{ "test.zb" };
 
-	try
+	void BooleanLiteralNode::parse(IParser& parser)
 	{
-		auto program = Program{};
-		auto parser = Parser{ source, program };
-		parser.run();
+		auto& token = parser.getToken();
 
-		auto translator = CTranslator{ "out.c", program };
-		translator.run();
+		if (token.id == TokenId::Key_TRUE)
+		{
+			m_value = true;
+		}
+		else if (token.id == TokenId::Key_FALSE)
+		{
+			m_value = false;
+		}
+		else
+		{
+			throw Error::create(token.range, "Expected TRUE or FALSE boolean literal");
+		}
+
+		m_range = token.range;
+		parser.eatToken();
+
+		m_type = Type{ BaseType_Boolean };
 	}
-	catch (const Error& err)
+
+	void BooleanLiteralNode::translate(ITranslator& translator) const
 	{
-		std::cerr << "Compile Error!" << std::endl;
-		std::cerr << err.what() << std::endl;
-		return -1;
+		translator.translate(*this);
 	}
 
-	return 0;
 }

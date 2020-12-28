@@ -33,10 +33,13 @@ namespace ZeeBasic::Compiler
 	{
 		class AssignmentStatementNode;
 		class BinaryExpressionNode;
+		class BooleanLiteralNode;
+		class CastExpressionNode;
 		class FunctionCallExpressionNode;
 		class IdentifierExpressionNode;
 		class IntegerLiteralNode;
 		class PrintStatementNode;
+		class RealLiteralNode;
 		class StringLiteralNode;
 	}
 
@@ -52,10 +55,13 @@ namespace ZeeBasic::Compiler
 
 		virtual void translate(const Nodes::AssignmentStatementNode& node) = 0;
 		virtual void translate(const Nodes::BinaryExpressionNode& node) = 0;
+		virtual void translate(const Nodes::BooleanLiteralNode& node) = 0;
+		virtual void translate(const Nodes::CastExpressionNode& node) = 0;
 		virtual void translate(const Nodes::FunctionCallExpressionNode& node) = 0;
 		virtual void translate(const Nodes::IdentifierExpressionNode& node) = 0;
 		virtual void translate(const Nodes::IntegerLiteralNode& node) = 0;
 		virtual void translate(const Nodes::PrintStatementNode& node) = 0;
+		virtual void translate(const Nodes::RealLiteralNode& node) = 0;
 		virtual void translate(const Nodes::StringLiteralNode& node) = 0;
 	};
 

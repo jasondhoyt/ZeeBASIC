@@ -67,14 +67,6 @@ namespace ZeeBasic::Compiler::Nodes
 			parser.expectToken(TokenId::Sym_CloseParen);
 			parser.eatToken();
 		}
-	}
-
-	void FunctionCallExpressionNode::analyze(IAnalyzer& analyzer)
-	{
-		for (auto& arg : m_arguments)
-		{
-			arg->analyze(analyzer);
-		}
 
 		// TODO : better lookup for built-in function types
 		if (m_name == "STR$")
@@ -96,7 +88,7 @@ namespace ZeeBasic::Compiler::Nodes
 		}
 	}
 
-	void FunctionCallExpressionNode::translate(ITranslator& translator)
+	void FunctionCallExpressionNode::translate(ITranslator& translator) const
 	{
 		translator.translate(*this);
 	}

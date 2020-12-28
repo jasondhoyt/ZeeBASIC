@@ -47,14 +47,11 @@ namespace ZeeBasic::Compiler::Nodes
 		m_range = token.range;
 		m_value = token.text;
 		parser.eatToken();
-	}
 
-	void StringLiteralNode::analyze(IAnalyzer& analyzer)
-	{
 		m_type = Type{ BaseType_String };
 	}
 
-	void StringLiteralNode::translate(ITranslator& translator)
+	void StringLiteralNode::translate(ITranslator& translator) const
 	{
 		translator.translate(*this);
 	}

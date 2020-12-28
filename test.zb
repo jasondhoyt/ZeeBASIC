@@ -1,2 +1,2 @@
-s$ = "Hi " + STR$(10)
-PRINT s$
+a = TRUE
+PRINT a

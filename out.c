@@ -2,17 +2,11 @@
 
 void program(void)
 {
-    zrt_String* v_s_s = zrt_str_empty();
-    zrt_String* t_1 = zrt_str_new("Hi ");
-    zrt_Int t_2 = 10;
-    zrt_String* t_3 = zrt_str_new_from_int(t_2);
-    zrt_String* t_4 = zrt_str_concat(t_1, t_3);
-    zrt_str_del(t_3);
-    zrt_str_del(t_1);
-    zrt_str_copy(v_s_s, t_4);
-    zrt_str_del(t_4);
-    zrt_println_str(v_s_s);
-    zrt_str_del(v_s_s);
+    zrt_Int v_a = 0;
+    zrt_Bool t_1 = 1;
+    zrt_Int t_2 = t_1 == 0 ? 0 : 1;
+    v_a = t_2;
+    zrt_println_int(v_a);
 }
 
 int main(int argc, char* argv[])

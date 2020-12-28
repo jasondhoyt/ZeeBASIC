@@ -30,7 +30,9 @@
 
 #include <stdint.h>
 
+typedef uint8_t zrt_Bool;
 typedef int64_t zrt_Int;
+typedef double zrt_Real;
 
 void zrt_init(int argc, char* argv[]);
 
@@ -47,5 +49,7 @@ zrt_String* zrt_str_concat(zrt_String* lhs, zrt_String* rhs);
 void zrt_str_copy(zrt_String* dst, zrt_String* src);
 void zrt_str_del(zrt_String* str);
 
+void zrt_println_bool(zrt_Bool arg);
 void zrt_println_int(zrt_Int arg);
+void zrt_println_real(zrt_Real arg);
 void zrt_println_str(zrt_String* arg);

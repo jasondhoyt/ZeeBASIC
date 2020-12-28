@@ -29,10 +29,12 @@
 #include "ZeeBasic/Compiler/ExpressionNode.hpp"
 
 #include "ZeeBasic/Compiler/BinaryExpressionNode.hpp"
+#include "ZeeBasic/Compiler/BooleanLiteralNode.hpp"
 #include "ZeeBasic/Compiler/Error.hpp"
 #include "ZeeBasic/Compiler/FunctionCallExpressionNode.hpp"
 #include "ZeeBasic/Compiler/IdentifierExpressionNode.hpp"
 #include "ZeeBasic/Compiler/IntegerLiteralNode.hpp"
+#include "ZeeBasic/Compiler/RealLiteralNode.hpp"
 #include "ZeeBasic/Compiler/StringLiteralNode.hpp"
 
 namespace ZeeBasic::Compiler::Nodes
@@ -99,12 +101,21 @@ namespace ZeeBasic::Compiler::Nodes
 		switch (token.id)
 		{
 
+		case TokenId::Key_TRUE:
+		case TokenId::Key_FALSE:
+			lhs = std::make_unique<BooleanLiteralNode>();
+			break;
+
 		case TokenId::Integer:
 			lhs = std::make_unique<IntegerLiteralNode>();
 			break;
 
 		case TokenId::String:
 			lhs = std::make_unique<StringLiteralNode>();
+			break;
+
+		case TokenId::Real:
+			lhs = std::make_unique<RealLiteralNode>();
 			break;
 
 		case TokenId::Sym_OpenParen:

@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include "IAnalyzer.hpp"
 #include "IParser.hpp"
 #include "ITranslator.hpp"
 #include "Range.hpp"
@@ -43,8 +42,7 @@ namespace ZeeBasic::Compiler::Nodes
 		const auto& getRange() const { return m_range; }
 
 		virtual void parse(IParser& parser) = 0;
-		virtual void analyze(IAnalyzer& analyzer) = 0;
-		virtual void translate(ITranslator& translator) = 0;
+		virtual void translate(ITranslator& translator) const = 0;
 
 	protected:
 		Range m_range;

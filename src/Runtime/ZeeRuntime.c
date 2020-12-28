@@ -124,9 +124,26 @@ void zrt_str_del(zrt_String* str)
 	free(str);
 }
 
+void zrt_println_bool(zrt_Bool arg)
+{
+	if (!arg)
+	{
+		printf("false\n");
+	}
+	else
+	{
+		printf("true\n");
+	}
+}
+
 void zrt_println_int(zrt_Int arg)
 {
 	printf("%lld\n", arg);
+}
+
+void zrt_println_real(zrt_Real arg)
+{
+	printf("%f\n", arg);
 }
 
 void zrt_println_str(zrt_String* arg)

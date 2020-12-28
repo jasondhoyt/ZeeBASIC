@@ -73,6 +73,11 @@ namespace ZeeBasic::Compiler
             lhs += rhs;
             return lhs;
         }
+
+        bool operator==(const Range& rhs) const
+        {
+            return startCol == rhs.startCol && endCol == rhs.endCol && startLine == rhs.startLine && endLine == rhs.endLine;
+        }
     };
 
 }

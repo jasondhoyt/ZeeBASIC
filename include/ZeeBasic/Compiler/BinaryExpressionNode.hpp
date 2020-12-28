@@ -49,12 +49,11 @@ namespace ZeeBasic::Compiler::Nodes
 		virtual ~BinaryExpressionNode();
 
 		auto getOperator() const { return m_op; }
-		auto& getLeft() const { return *m_lhs; }
-		auto& getRight() const { return *m_rhs; }
+		const auto& getLeft() const { return *m_lhs; }
+		const auto& getRight() const { return *m_rhs; }
 
 		void parse(IParser& parser) override;
-		void analyze(IAnalyzer& analyzer) override;
-		void translate(ITranslator& translator) override;
+		void translate(ITranslator& translator) const override;
 
 	private:
 		Operator m_op;

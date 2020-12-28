@@ -66,13 +66,7 @@
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Parser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ZeeBasic\Compiler\Analyzer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\IParser.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ZeeBasic\Compiler\IAnalyzer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\StatementNode.hpp">
@@ -108,6 +102,15 @@
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\IdentifierExpressionNode.hpp">
       <Filter>Header Files\Nodes</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\BooleanLiteralNode.hpp">
+      <Filter>Header Files\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\RealLiteralNode.hpp">
+      <Filter>Header Files\Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\CastExpressionNode.hpp">
+      <Filter>Header Files\Nodes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Compiler\ConstString.cpp">
@@ -134,9 +137,6 @@
     <ClCompile Include="..\..\src\Compiler\Parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Compiler\Analyzer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Compiler\StatementNode.cpp">
       <Filter>Source Files\Nodes</Filter>
     </ClCompile>
@@ -159,6 +159,15 @@
       <Filter>Source Files\Nodes</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Compiler\IdentifierExpressionNode.cpp">
+      <Filter>Source Files\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\BooleanLiteralNode.cpp">
+      <Filter>Source Files\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\RealLiteralNode.cpp">
+      <Filter>Source Files\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\CastExpressionNode.cpp">
       <Filter>Source Files\Nodes</Filter>
     </ClCompile>
   </ItemGroup>

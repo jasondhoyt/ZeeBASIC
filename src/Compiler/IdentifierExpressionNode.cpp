@@ -52,14 +52,11 @@ namespace ZeeBasic::Compiler::Nodes
 		m_symbol = parser.getSymbolTable().findOrCreateSymbol(name, token.range, type);
 		m_range = token.range;
 		parser.eatToken();
-	}
 
-	void IdentifierExpressionNode::analyze(IAnalyzer& analyzer)
-	{
 		m_type = m_symbol->type;
 	}
 
-	void IdentifierExpressionNode::translate(ITranslator& translator)
+	void IdentifierExpressionNode::translate(ITranslator& translator) const
 	{
 		translator.translate(*this);
 	}

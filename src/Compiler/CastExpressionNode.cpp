@@ -24,35 +24,33 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#include <iostream>
+#include <cassert>
+#include <cstdlib>
 
-#include "ZeeBasic/Compiler/CTranslator.hpp"
-#include "ZeeBasic/Compiler/Error.hpp"
-#include "ZeeBasic/Compiler/FileSourceReader.hpp"
-#include "ZeeBasic/Compiler/Parser.hpp"
-#include "ZeeBasic/Compiler/Program.hpp"
+#include "ZeeBasic/Compiler/CastExpressionNode.hpp"
 
-using namespace ZeeBasic::Compiler;
-
-int main(int argc, char* argv[])
+namespace ZeeBasic::Compiler::Nodes
 {
-	auto source = FileSourceReader{ "test.zb" };
 
-	try
+	CastExpressionNode::CastExpressionNode(int castType, std::unique_ptr<ExpressionNode> expr)
+		:
+		ExpressionNode(),
+		m_expr(std::move(expr))
 	{
-		auto program = Program{};
-		auto parser = Parser{ source, program };
-		parser.run();
-
-		auto translator = CTranslator{ "out.c", program };
-		translator.run();
-	}
-	catch (const Error& err)
-	{
-		std::cerr << "Compile Error!" << std::endl;
-		std::cerr << err.what() << std::endl;
-		return -1;
+		m_type = castType;
 	}
 
-	return 0;
+	void CastExpressionNode::parse(IParser& parser)
+	{ 
+		if (!m_expr)
+		{
+			// TODO: parse new sub-expression
+		}
+	}
+
+	void CastExpressionNode::translate(ITranslator& translator) const
+	{
+		translator.translate(*this);
+	}
+
 }

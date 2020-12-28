@@ -51,15 +51,7 @@ namespace ZeeBasic::Compiler::Nodes
 		parser.eatEndOfLine();
 	}
 
-	void PrintStatementNode::analyze(IAnalyzer& analyzer)
-	{
-		if (m_expr)
-		{
-			m_expr->analyze(analyzer);
-		}
-	}
-
-	void PrintStatementNode::translate(ITranslator& translator)
+	void PrintStatementNode::translate(ITranslator& translator) const
 	{
 		translator.translate(*this);
 	}
