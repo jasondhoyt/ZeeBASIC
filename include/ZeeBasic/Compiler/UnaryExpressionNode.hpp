@@ -26,45 +26,32 @@
 
 #pragma once
 
-namespace ZeeBasic::Compiler
+#include "ExpressionNode.hpp"
+
+namespace ZeeBasic::Compiler::Nodes
 {
 
-	namespace Nodes
-	{
-		class AssignmentStatementNode;
-		class BinaryExpressionNode;
-		class BooleanLiteralNode;
-		class CastExpressionNode;
-		class FunctionCallExpressionNode;
-		class IdentifierExpressionNode;
-		class IntegerLiteralNode;
-		class PrintStatementNode;
-		class RealLiteralNode;
-		class StringLiteralNode;
-		class UnaryExpressionNode;
-	}
-
-	struct Program;
-
-	class ITranslator
+	class UnaryExpressionNode
+		:
+		public ExpressionNode
 	{
 	public:
-		ITranslator() { }
-		virtual ~ITranslator() { }
+		enum class Operator
+		{
+			Unknown,
+			Negate,
+			BitwiseNot
+		};
 
-		virtual void run() = 0;
+		void parse(IParser& parser) override;
+		void translate(ITranslator& translator) const override;
 
-		virtual void translate(const Nodes::AssignmentStatementNode& node) = 0;
-		virtual void translate(const Nodes::BinaryExpressionNode& node) = 0;
-		virtual void translate(const Nodes::BooleanLiteralNode& node) = 0;
-		virtual void translate(const Nodes::CastExpressionNode& node) = 0;
-		virtual void translate(const Nodes::FunctionCallExpressionNode& node) = 0;
-		virtual void translate(const Nodes::IdentifierExpressionNode& node) = 0;
-		virtual void translate(const Nodes::IntegerLiteralNode& node) = 0;
-		virtual void translate(const Nodes::PrintStatementNode& node) = 0;
-		virtual void translate(const Nodes::RealLiteralNode& node) = 0;
-		virtual void translate(const Nodes::StringLiteralNode& node) = 0;
-		virtual void translate(const Nodes::UnaryExpressionNode& node) = 0;
+		auto getOperator() const { return m_op; }
+		const auto& getExpression() const { return *m_expr; }
+
+	private:
+		Operator m_op = Operator::Unknown;
+		std::unique_ptr<ExpressionNode> m_expr;
 	};
 
 }

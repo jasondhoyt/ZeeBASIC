@@ -2,11 +2,11 @@
 
 void program(void)
 {
-    zrt_Int v_a = 0;
-    zrt_Bool t_1 = 1;
-    zrt_Int t_2 = t_1 == 0 ? 0 : 1;
-    v_a = t_2;
-    zrt_println_int(v_a);
+    zrt_Int t_1 = 2;
+    zrt_Int t_2 = 3;
+    zrt_Int t_3 = t_1 + t_2;
+    zrt_Int t_4 = -t_3;
+    zrt_println_int(t_4);
 }
 
 int main(int argc, char* argv[])

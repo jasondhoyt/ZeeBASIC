@@ -40,6 +40,7 @@
 #include "ZeeBasic/Compiler/Program.hpp"
 #include "ZeeBasic/Compiler/RealLiteralNode.hpp"
 #include "ZeeBasic/Compiler/StringLiteralNode.hpp"
+#include "ZeeBasic/Compiler/UnaryExpressionNode.hpp"
 
 namespace ZeeBasic::Compiler
 {
@@ -288,37 +289,120 @@ namespace ZeeBasic::Compiler
 		auto lhs = popIndex();
 
 		m_writer.indent();
-		if (lhs.type.base == BaseType_Integer)
+		if (node.getType().base == BaseType_Boolean || node.getType().base == BaseType_Integer || node.getType().base == BaseType_Real)
 		{
-			auto ix = pushIndex(BaseType_Integer);
-			char op = '?';
-			switch (node.getOperator())
+			auto ix = pushIndex(node.getType());
+			auto op = node.getOperator();
+			if (op == Nodes::BinaryExpressionNode::Operator::Divide)
 			{
-
-			case Nodes::BinaryExpressionNode::Operator::Add:
-				op = '+';
-				break;
-
-			case Nodes::BinaryExpressionNode::Operator::Subtract:
-				op = '-';
-				break;
-
-			case Nodes::BinaryExpressionNode::Operator::Multiply:
-				op = '*';
-				break;
-
-			case Nodes::BinaryExpressionNode::Operator::Divide:
-				op = '/';
-				break;
-
-			default:
-				assert(false);
-
+				m_writer << "zrt_Real " << ix << " = (zrt_Real)" << lhs << " / (zrt_Real)" << rhs << ";\n";
 			}
+			else if (op == Nodes::BinaryExpressionNode::Operator::IntDivide)
+			{
+				m_writer << "zrt_Int " << ix << " = (zrt_Int)(" << lhs << " / " << rhs << ");\n";
+			}
+			else
+			{
+				const char* type = "? ";
+				switch (node.getType().base)
+				{
 
-			m_writer << "zrt_Int " << ix << " = " << lhs << " " << op << " " << rhs << ";\n";
+				case BaseType_Boolean:
+					type = "zrt_Bool ";
+					break;
+
+				case BaseType_Integer:
+					type = "zrt_Int ";
+					break;
+
+				case BaseType_Real:
+					type = "zrt_Real ";
+					break;
+
+				default:
+					assert(false);
+
+				}
+
+				const char* opStr = "?";
+				switch (node.getOperator())
+				{
+
+				case Nodes::BinaryExpressionNode::Operator::Add:
+					opStr = "+";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::Subtract:
+					opStr = "-";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::Multiply:
+					opStr = "*";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::Modulus:
+					opStr = "%";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::Equals:
+					opStr = "==";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::NotEquals:
+					opStr = "!=";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::Less:
+					opStr = "<";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::LessEquals:
+					opStr = "<=";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::Greater:
+					opStr = ">";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::GreaterEquals:
+					opStr = ">=";
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::BitwiseOr:
+					if (node.getType().base == BaseType_Boolean)
+					{
+						opStr = "||";
+					}
+					else
+					{
+						opStr = "|";
+					}
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::BitwiseAnd:
+					if (node.getType().base == BaseType_Boolean)
+					{
+						opStr = "&&";
+					}
+					else
+					{
+						opStr = "&";
+					}
+					break;
+
+				case Nodes::BinaryExpressionNode::Operator::BitwiseXor:
+					opStr = "^";
+					break;
+
+				default:
+					assert(false);
+
+				}
+
+				m_writer << type << ix << " = " << lhs << " " << opStr << " " << rhs << ";\n";
+			}
 		}
-		else if (lhs.type.base == BaseType_String)
+		else if (node.getType().base == BaseType_String)
 		{
 			assert(node.getOperator() == Nodes::BinaryExpressionNode::Operator::Add);
 			auto ix = pushIndex(BaseType_String);
@@ -346,23 +430,6 @@ namespace ZeeBasic::Compiler
 		switch (node.getType().base)
 		{
 
-		case BaseType_Boolean:
-			if (index.type.base == BaseType_Integer)
-			{
-				auto ix = pushIndex(BaseType_Boolean);
-				m_writer << "zrt_Bool " << ix << " = " << index << " != 0;\n";
-			}
-			else if (index.type.base == BaseType_Real)
-			{
-				auto ix = pushIndex(BaseType_Boolean);
-				m_writer << "zrt_Bool " << ix << " = " << index << " != 0.0;\n";
-			}
-			else
-			{
-				assert(false);
-			}
-			break;
-
 		case BaseType_Integer:
 			if (index.type.base == BaseType_Boolean)
 			{
@@ -381,12 +448,7 @@ namespace ZeeBasic::Compiler
 			break;
 
 		case BaseType_Real:
-			if (index.type.base == BaseType_Boolean)
-			{
-				auto ix = pushIndex(BaseType_Real);
-				m_writer << "zrt_Real " << ix << " = " << index << " == 0 ? 0.0 : 1.0;\n";
-			}
-			else if (index.type.base == BaseType_Integer)
+			if (index.type.base == BaseType_Integer)
 			{
 				auto ix = pushIndex(BaseType_Real);
 				m_writer << "zrt_Real " << ix << " = (zrt_Real)" << index << ";\n";
@@ -495,6 +557,63 @@ namespace ZeeBasic::Compiler
 		auto ix = pushIndex(BaseType_String);
 		m_writer.indent();
 		m_writer << "zrt_String* " << ix << " = zrt_str_new(\"" << node.getValue().getText() << "\");\n";
+	}
+
+	void CTranslator::translate(const Nodes::UnaryExpressionNode& node)
+	{
+		node.getExpression().translate(*this);
+
+		auto index = popIndex();
+		m_writer.indent();
+		switch (node.getType().base)
+		{
+
+		case BaseType_Boolean:
+			if (node.getOperator() == Nodes::UnaryExpressionNode::Operator::BitwiseNot)
+			{
+				auto ix = pushIndex(BaseType_Boolean);
+				m_writer << "zrt_Bool " << ix << " = !" << index << ";\n";
+			}
+			else
+			{
+				assert(false);
+			}
+			break;
+
+		case BaseType_Integer:
+			if (node.getOperator() == Nodes::UnaryExpressionNode::Operator::Negate)
+			{
+				auto ix = pushIndex(BaseType_Integer);
+				m_writer << "zrt_Int " << ix << " = -" << index << ";\n";
+			}
+			else if (node.getOperator() == Nodes::UnaryExpressionNode::Operator::BitwiseNot)
+			{
+				auto ix = pushIndex(BaseType_Integer);
+				m_writer << "zrt_Int " << ix << " = ~" << index << ";\n";
+			}
+			else
+			{
+				assert(false);
+			}
+			break;
+
+		case BaseType_Real:
+			if (node.getOperator() == Nodes::UnaryExpressionNode::Operator::Negate)
+			{
+				auto ix = pushIndex(BaseType_Real);
+				m_writer << "zrt_Real " << ix << " = -" << index << ";\n";
+			}
+			else
+			{
+				assert(false);
+			}
+			break;
+
+		default:
+			assert(false);
+			break;
+
+		}
 	}
 
 	int CTranslator::pushIndex(const Symbol& symbol)

@@ -24,47 +24,73 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#pragma once
+#include <cassert>
+#include <cstdlib>
 
-namespace ZeeBasic::Compiler
+#include "ZeeBasic/Compiler/UnaryExpressionNode.hpp"
+
+#include "ZeeBasic/Compiler/Error.hpp"
+
+namespace ZeeBasic::Compiler::Nodes
 {
 
-	namespace Nodes
+	void UnaryExpressionNode::parse(IParser& parser)
 	{
-		class AssignmentStatementNode;
-		class BinaryExpressionNode;
-		class BooleanLiteralNode;
-		class CastExpressionNode;
-		class FunctionCallExpressionNode;
-		class IdentifierExpressionNode;
-		class IntegerLiteralNode;
-		class PrintStatementNode;
-		class RealLiteralNode;
-		class StringLiteralNode;
-		class UnaryExpressionNode;
+		auto& token = parser.getToken();
+		if (token.id == TokenId::Sym_Subtract)
+		{
+			m_op = Operator::Negate;
+		}
+		else if (token.id == TokenId::Key_NOT)
+		{
+			m_op = Operator::BitwiseNot;
+		}
+		m_range = token.range;
+
+		parser.eatToken();
+
+		m_expr = ExpressionNode::parseExpression(parser, 10);
+		if (!m_expr)
+		{
+			throw Error::create(parser.getToken().range, "Expected expression after unary operator");
+		}
+
+		switch (m_expr->getType().base)
+		{
+
+		case BaseType_Boolean:
+			if (m_op == Operator::Negate)
+			{
+				throw Error::create(m_range, "Operator not allowed for boolean type.");
+			}
+			break;
+
+		case BaseType_Integer:
+			// both allowed
+			break;
+
+		case BaseType_Real:
+			if (m_op == Operator::BitwiseNot)
+			{
+				throw Error::create(m_range, "Operator not allowed for real type.");
+			}
+			break;
+
+		case BaseType_String:
+			throw Error::create(m_range, "Operator not allowed for string type.");
+
+		default:
+			assert(false);
+			break;
+
+		}
+
+		m_type = m_expr->getType();
 	}
 
-	struct Program;
-
-	class ITranslator
+	void UnaryExpressionNode::translate(ITranslator& translator) const
 	{
-	public:
-		ITranslator() { }
-		virtual ~ITranslator() { }
-
-		virtual void run() = 0;
-
-		virtual void translate(const Nodes::AssignmentStatementNode& node) = 0;
-		virtual void translate(const Nodes::BinaryExpressionNode& node) = 0;
-		virtual void translate(const Nodes::BooleanLiteralNode& node) = 0;
-		virtual void translate(const Nodes::CastExpressionNode& node) = 0;
-		virtual void translate(const Nodes::FunctionCallExpressionNode& node) = 0;
-		virtual void translate(const Nodes::IdentifierExpressionNode& node) = 0;
-		virtual void translate(const Nodes::IntegerLiteralNode& node) = 0;
-		virtual void translate(const Nodes::PrintStatementNode& node) = 0;
-		virtual void translate(const Nodes::RealLiteralNode& node) = 0;
-		virtual void translate(const Nodes::StringLiteralNode& node) = 0;
-		virtual void translate(const Nodes::UnaryExpressionNode& node) = 0;
-	};
+		translator.translate(*this);
+	}
 
 }

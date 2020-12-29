@@ -1,2 +1,1 @@
-a = TRUE
-PRINT a
+PRINT -(2 + 3)

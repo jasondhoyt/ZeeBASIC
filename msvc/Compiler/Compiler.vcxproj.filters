@@ -111,6 +111,9 @@
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\CastExpressionNode.hpp">
       <Filter>Header Files\Nodes</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\UnaryExpressionNode.hpp">
+      <Filter>Header Files\Nodes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Compiler\ConstString.cpp">
@@ -168,6 +171,9 @@
       <Filter>Source Files\Nodes</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Compiler\CastExpressionNode.cpp">
+      <Filter>Source Files\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Compiler\UnaryExpressionNode.cpp">
       <Filter>Source Files\Nodes</Filter>
     </ClCompile>
   </ItemGroup>

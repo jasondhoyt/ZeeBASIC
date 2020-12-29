@@ -110,6 +110,7 @@
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Token.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\TokenId.hpp" />
     <ClInclude Include="..\..\include\ZeeBasic\Compiler\Type.hpp" />
+    <ClInclude Include="..\..\include\ZeeBasic\Compiler\UnaryExpressionNode.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Compiler\AssignmentStatementNode.cpp" />
@@ -131,6 +132,7 @@
     <ClCompile Include="..\..\src\Compiler\StatementNode.cpp" />
     <ClCompile Include="..\..\src\Compiler\StringLiteralNode.cpp" />
     <ClCompile Include="..\..\src\Compiler\SymbolTable.cpp" />
+    <ClCompile Include="..\..\src\Compiler\UnaryExpressionNode.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

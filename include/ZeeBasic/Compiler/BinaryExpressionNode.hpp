@@ -38,11 +38,22 @@ namespace ZeeBasic::Compiler::Nodes
 	public:
 		enum class Operator
 		{
+			None,
 			Add,
 			Subtract,
 			Multiply,
-			Divide,
-			IntDivide
+			Divide,			// if int, results in real
+			IntDivide,		// if int or real results in int
+			Modulus,
+			Equals,
+			NotEquals,
+			Less,
+			LessEquals,
+			Greater,
+			GreaterEquals,
+			BitwiseOr,		// boolean and integer only
+			BitwiseAnd,		// boolean and integer only
+			BitwiseXor		// boolean and integer only
 		};
 
 		BinaryExpressionNode(Operator op, std::unique_ptr<ExpressionNode> lhs, std::unique_ptr<ExpressionNode> rhs);

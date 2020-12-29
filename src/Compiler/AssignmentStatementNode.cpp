@@ -80,31 +80,20 @@ namespace ZeeBasic::Compiler::Nodes
 		
 		if (m_expr->getType().base != m_symbol->type.base)
 		{
+			// only allow casting boolean -> integer, integer -> real and real -> integer (everything else must be explicit)
 			auto casted = false;
 
-			// perform implicit cast (for number or boolean types)
-			if (m_expr->getType().base == BaseType_Boolean)
+			if (m_symbol->type.base == BaseType_Integer)
 			{
-				// integer and real can cast to boolean
-				if (m_symbol->type.base == BaseType_Integer || m_symbol->type.base == BaseType_Real)
+				if (m_expr->getType().base == BaseType_Boolean || m_expr->getType().base == BaseType_Real)
 				{
 					m_expr = std::make_unique<CastExpressionNode>(m_symbol->type.base, std::move(m_expr));
 					casted = true;
 				}
 			}
-			else if (m_expr->getType().base == BaseType_Integer)
+			else if (m_symbol->type.base == BaseType_Real)
 			{
-				// boolean and real can cast to integer
-				if (m_symbol->type.base == BaseType_Boolean || m_symbol->type.base == BaseType_Real)
-				{
-					m_expr = std::make_unique<CastExpressionNode>(m_symbol->type.base, std::move(m_expr));
-					casted = true;
-				}
-			}
-			else if (m_expr->getType().base == BaseType_Real)
-			{
-				// boolean and integer can cast to real
-				if (m_symbol->type.base == BaseType_Boolean || m_symbol->type.base == BaseType_Integer)
+				if (m_expr->getType().base == BaseType_Integer)
 				{
 					m_expr = std::make_unique<CastExpressionNode>(m_symbol->type.base, std::move(m_expr));
 					casted = true;

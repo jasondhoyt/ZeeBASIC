@@ -39,10 +39,7 @@ namespace ZeeBasic::Compiler::Nodes
 		public Node
 	{
 	public:
-		static std::unique_ptr<ExpressionNode> parseExpression(IParser& parser);
-
-		ExpressionNode();
-		virtual ~ExpressionNode();
+		static std::unique_ptr<ExpressionNode> parseExpression(IParser& parser, int prec = 0);
 
 		const auto& getType() const { return m_type; }
 

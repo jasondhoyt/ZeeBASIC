@@ -58,6 +58,7 @@ namespace ZeeBasic::Compiler
 		void translate(const Nodes::PrintStatementNode& node) override;
 		void translate(const Nodes::RealLiteralNode& node) override;
 		void translate(const Nodes::StringLiteralNode& node) override;
+		void translate(const Nodes::UnaryExpressionNode& node) override;
 
 	private:
 		FILE* m_file = nullptr;

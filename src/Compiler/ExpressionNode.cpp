@@ -36,6 +36,7 @@
 #include "ZeeBasic/Compiler/IntegerLiteralNode.hpp"
 #include "ZeeBasic/Compiler/RealLiteralNode.hpp"
 #include "ZeeBasic/Compiler/StringLiteralNode.hpp"
+#include "ZeeBasic/Compiler/UnaryExpressionNode.hpp"
 
 namespace ZeeBasic::Compiler::Nodes
 {
@@ -44,6 +45,25 @@ namespace ZeeBasic::Compiler::Nodes
 	{
 		switch (token.id)
 		{
+		case TokenId::Key_OR:
+			return 1;
+
+		case TokenId::Key_XOR:
+			return 2;
+
+		case TokenId::Key_AND:
+			return 3;
+
+		case TokenId::Sym_Equal:
+		case TokenId::Sym_NotEqual:
+			return 4;
+
+		case TokenId::Sym_Less:
+		case TokenId::Sym_LessEquals:
+		case TokenId::Sym_Greater:
+		case TokenId::Sym_GreaterEquals:
+			return 5;
+
 		case TokenId::Sym_Add:
 		case TokenId::Sym_Subtract:
 			return 7;
@@ -51,6 +71,7 @@ namespace ZeeBasic::Compiler::Nodes
 		case TokenId::Sym_Multiply:
 		case TokenId::Sym_Divide:
 		case TokenId::Sym_IntDivide:
+		case TokenId::Key_MOD:
 			return 8;
 
 		default:
@@ -69,6 +90,16 @@ namespace ZeeBasic::Compiler::Nodes
 		case TokenId::Sym_Multiply: return BinaryExpressionNode::Operator::Multiply;
 		case TokenId::Sym_Divide: return BinaryExpressionNode::Operator::Divide;
 		case TokenId::Sym_IntDivide: return BinaryExpressionNode::Operator::IntDivide;
+		case TokenId::Key_MOD: return BinaryExpressionNode::Operator::Modulus;
+		case TokenId::Sym_Equal: return BinaryExpressionNode::Operator::Equals;
+		case TokenId::Sym_NotEqual: return BinaryExpressionNode::Operator::NotEquals;
+		case TokenId::Sym_Less: return BinaryExpressionNode::Operator::Less;
+		case TokenId::Sym_LessEquals: return BinaryExpressionNode::Operator::LessEquals;
+		case TokenId::Sym_Greater: return BinaryExpressionNode::Operator::Greater;
+		case TokenId::Sym_GreaterEquals: return BinaryExpressionNode::Operator::GreaterEquals;
+		case TokenId::Key_OR: return BinaryExpressionNode::Operator::BitwiseOr;
+		case TokenId::Key_AND: return BinaryExpressionNode::Operator::BitwiseAnd;
+		case TokenId::Key_XOR: return BinaryExpressionNode::Operator::BitwiseXor;
 		default:
 			break;
 		}
@@ -93,7 +124,7 @@ namespace ZeeBasic::Compiler::Nodes
 		return false;
 	}
 
-	static std::unique_ptr<ExpressionNode> parseSubExpression(IParser& parser, int prec)
+	std::unique_ptr<ExpressionNode> ExpressionNode::parseExpression(IParser& parser, int prec)
 	{
 		auto& token = parser.getToken();
 
@@ -118,9 +149,14 @@ namespace ZeeBasic::Compiler::Nodes
 			lhs = std::make_unique<RealLiteralNode>();
 			break;
 
+		case TokenId::Sym_Subtract:
+		case TokenId::Key_NOT:
+			lhs = std::make_unique<UnaryExpressionNode>();
+			break;
+
 		case TokenId::Sym_OpenParen:
 			parser.eatToken();
-			lhs = parseSubExpression(parser, 0);
+			lhs = parseExpression(parser, 0);
 			parser.expectToken(TokenId::Sym_CloseParen);
 			parser.eatToken();
 			break;
@@ -155,7 +191,7 @@ namespace ZeeBasic::Compiler::Nodes
 			auto id = parser.getToken().id;
 			parser.eatToken();
 
-			auto rhs = parseSubExpression(parser, newPrec);
+			auto rhs = parseExpression(parser, newPrec);
 			if (!rhs)
 			{
 				throw Error::create(parser.getToken().range, "Expected expression for right-hand side of operator");
@@ -167,19 +203,5 @@ namespace ZeeBasic::Compiler::Nodes
 
 		return lhs;
 	}
-
-	std::unique_ptr<ExpressionNode> ExpressionNode::parseExpression(IParser& parser)
-	{
-		return parseSubExpression(parser, 0);
-	}
-
-	ExpressionNode::ExpressionNode()
-		:
-		Node(),
-		m_type(BaseType_Unknown)
-	{ }
-
-	ExpressionNode::~ExpressionNode()
-	{ }
 
 }
